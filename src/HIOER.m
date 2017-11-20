@@ -103,7 +103,7 @@ phaseRetrieveSupport[FTXAbs_, support_, nIterations_, nRepeats_, nHIO_, gamma_]:
           (*ER case*)
             xi *= support
           ];
-          
+
           {i, nIterations}
         ];
         xierror=Total@Total@Abs[Abs[Fourier[xi]]^2-Abs[FTXAbs]^2];
