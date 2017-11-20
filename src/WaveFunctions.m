@@ -38,6 +38,8 @@ complexDotProduct::usage =
 overlapArray::usage =
     "overlapArray[array1, array2, dx, dy] calculates the squared overlap magnitude of two 2D matrices normalized with respect to spacings dx, dy between probing points"
 
+supportHelper::usage =
+    "supportHelper[elementaryCellXYTable_] returns wave function with value one in the whole elementary cell"
 
 (* ---- Wave functions of specific models ---- *)
 
@@ -113,6 +115,10 @@ waveFunctionAB[elementaryCellXYTable_, k0_, a_, \[Sigma]w_, hamiltonianThetaPhi_
       ];
       Return[ret] (**)
     ]
+
+supportHelper[elementaryCellXYTable_]:=
+    Map[1 &, elementaryCellXYTable, {2}]
+
 
 
 End[] (* `Private` *)
