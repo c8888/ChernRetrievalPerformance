@@ -49,8 +49,8 @@ phaseRetrieveGuess[FTXAbs_, wavefAbs_, support_, nIterations_, nRepeats_, nHIO_,
           FTxi = Fourier[xi];
           FTxi = FTXAbs*Exp[I*Arg[FTxi]];
           xi = InverseFourier[FTxi];
-          If[Equal[Mod[i, nHIO],0],
-          (*HIOER case*)
+          If[Mod[i, nHIO]!=0,
+          (*HIO case*)
             xi = inverseSupport * (xiprim - gamma xi) + wavefAbs * Exp[I Arg[xi] ]
             (* we assume that wavefAbs is properly "supported"*)
             ,
@@ -67,7 +67,7 @@ phaseRetrieveGuess[FTXAbs_, wavefAbs_, support_, nIterations_, nRepeats_, nHIO_,
         ,
         {k, nRepeats}
       ];
-      Return[retr*support]; (* returned value *)
+      Return[retr*support] (* returned value *)
 
     ]
 
@@ -96,8 +96,8 @@ phaseRetrieveSupport[FTXAbs_, support_, nIterations_, nRepeats_, nHIO_, gamma_]:
           FTxi = FTXAbs*Exp[I*Arg[FTxi]];
           xi = InverseFourier[FTxi];
 
-          If[Equal[Mod[i, nHIO],0],
-          (*HIOER case*)
+          If[Mod[i, nHIO]!=0,
+          (*HIO case*)
             xi = inverseSupport * (xiprim - gamma xi) + support * xi
             ,
           (*ER case*)

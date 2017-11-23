@@ -36,10 +36,17 @@ complexDotProduct::usage =
     "complexDotProduct[x, y] takes vectors x and y and returns hermitian_conjugate(y) . x"
 
 overlapArray::usage =
-    "overlapArray[array1, array2, dx, dy] calculates the squared overlap magnitude of two 2D matrices normalized with respect to spacings dx, dy between probing points"
+    "overlapArray[array1, array2] calculates the squared overlap magnitude of two 2D matrices. We assume dx and dy do not change anywhere during execution of the program!"
 
 supportHelper::usage =
     "supportHelper[elementaryCellXYTable_] returns wave function with value one in the whole elementary cell"
+
+wannierRectangleTable::usage =
+    "wannierRectangleTable[fullSpace2DNodes_, nodesNeighbourhood_, wannierNormalisationFactorValue_, \[Sigma]w_, \[Delta]x_, \[Delta]y_] returns table of wannier function values
+    in the neighbourhood of every node to significantly speed up calculations of overlap."
+
+wannierProject::usage =
+    "wannierProject[array2D_, nodesNeighbourhood_, wannierRectangleTableValues_, \[Delta]x_, \[Delta]y_] returns a wave function vector in wannier function basis"
 
 (* ---- Wave functions of specific models ---- *)
 
@@ -55,17 +62,27 @@ Begin["`Private`"]
 
 (* ---- Helping functions ---- *)
 
-wannierNormalisationFactor[\[Sigma]w_, \[Delta]x_, \[Delta]y_, space2DProbingPoints_] :=
-    1/Sqrt[Total@Total[
-    Chop@Map[wannier[#, {0, 0}, \[Sigma]w, 1] &, space2DProbingPoints, {2}]^2
-  ] * \[Delta]x * \[Delta]y
-]
+wannierNormalisationFactor[\[Sigma]w_, \[Delta]x_, \[Delta]y_, rangeRectangleSizeX_, rangeRectangleSizeY_] :=
+    Module[
+      {
+        nx = Round[rangeRectangleSizeX/2/\[Delta]x],
+        ny = Round[rangeRectangleSizeX/2/\[Delta]y]
+      },
+      Return@(1/Sqrt[Total@Total[
+        Chop@Map[wannier[#, {0, 0}, \[Sigma]w, 1] &,
+          Table[{x,y}, {x,-nx*\[Delta]x, rangeRectangleSizeX/2, \[Delta]x},{y,-ny*\[Delta]y, rangeRectangleSizeY/2, \[Delta]y}],
+        {2}]^2
+      (*We explicitly make sure that we cross the zero point during normalisation!!!! We translate the rectangular net if necessary. *)
+        ]*\[Delta]x * \[Delta]y
+      ])
+    ]
 
 wannier[r_,ri_,\[Sigma]w_, wannierNormalisationFactor_]:=
      wannierNormalisationFactor*Exp[(-(N@r[[1]]-N@ri[[1]])^2 - (N@r[[2]]-N@ri[[2]])^2)/2./N@\[Sigma]w^2]
 
+
 interferenceProfileSin[k0x_, k0y_, kx_, ky_, n_, m_, a_] :=
-    Which[Mod[a (kx - k0x), Pi] != 0,
+    Which[Mod[a (kx - k0x), Pi] != 0, (*Non time-consuming limit calculation*)
       Sin[(2. n + 1.) a (kx - k0x)]/Sin[a (kx - k0x)]*
           Which[Mod[a (ky - k0y), Pi] != 0,
             Sin[(m + 0.5) a (ky - k0y)]/Sin[0.5 a (ky - k0y)],
@@ -78,11 +95,32 @@ interferenceProfileSin[k0x_, k0y_, kx_, ky_, n_, m_, a_] :=
 
 complexDotProduct[x_, y_] := Chop[Dot[x, Conjugate[y]]]
 
-overlapArray[array1_, array2_, dx_, dy_]:=
+overlapArray[array1_, array2_, \[Delta]x_, \[Delta]y_]:=
     Return[
-      Total[Total[Abs[Conjugate[array1] * array2]]]^2 * dx^2 * dy^2
+      Abs[Total[Total[Conjugate[array1] * array2]] \[Delta]x * \[Delta]y]^2
     ]
 
+supportHelper[elementaryCellXYTable_]:=
+    Map[1 &, elementaryCellXYTable, {2}]
+
+
+wannierRectangleTable[fullSpace2DNodes_, nodesNeighbourhood_, wannierNormalisationFactorValue_, \[Sigma]w_, \[Delta]x_, \[Delta]y_]:=
+    Module[ (* All data calculated using only first node *)
+      {
+        rectangleDims = First@nodesNeighbourhood,
+        firstNode = First@fullSpace2DNodes
+      },
+      Return@Map[wannierNormalisationFactorValue * (* See page 25 in lab notebook *)
+          Exp[-Total[((firstNode[[1]] - #)*{\[Delta]x, \[Delta]y} - firstNode[[2]])^2]/2./N@\[Sigma]w^2] &,
+        Table[{i, j}, {i, rectangleDims[[1, 1]], rectangleDims[[2, 1]]}, {j, rectangleDims[[1, 2]], rectangleDims[[2, 2]]}], {2}]
+    ]
+
+wannierProject[array2D_, nodesNeighbourhood_, wannierRectangleTableValues_, \[Delta]x_, \[Delta]y_]:=
+    Return@(Map[Total@Total[wannierRectangleTableValues * array2D[[ #[[1,1]];;#[[2,1]] , #[[1,2]];;#[[2,2]] ]]]&,
+    nodesNeighbourhood, {1}] * \[Delta]x * \[Delta]y)
+
+overlapWannier[ck1_, ck2_]:=
+    Abs[complexDotProduct[ck1, ck2]]^2
 
 (* ---- Wave functions of specific models ---- *)
 
@@ -92,8 +130,8 @@ waveFunctionAB[elementaryCellXYTable_, k0_, a_, \[Sigma]w_, hamiltonianThetaPhi_
         ret,
         \[Theta]k0,
         \[Phi]k0,
-        c\[Theta]k0,
-        s\[Theta]k0,
+        c\[Theta]k02,
+        s\[Theta]k02,
         expi\[Phi]k0,
         nodesA = {{0,0}, {0,a}, {0,-a}, {2a,a}, {2a,0}, {2a,-a}},
         nodesB = {{-a, a}, {-a, 0}, {-a, -a}, {a,a}, {a,0}, {a,-a}},
@@ -113,11 +151,9 @@ waveFunctionAB[elementaryCellXYTable_, k0_, a_, \[Sigma]w_, hamiltonianThetaPhi_
             - c\[Theta]k02 * expi\[Phi]k0 * Exp[I k0.(#-{a,0})] * Total@Function[r, Map[ wannier[r, #, \[Sigma]w, 1.]&, nodesB, {1}]][#] & ,
         elementaryCellXYTable, {2}
       ];
-      Return[ret] (**)
+      Return[ret] (*not normalized yet*)
     ]
 
-supportHelper[elementaryCellXYTable_]:=
-    Map[1 &, elementaryCellXYTable, {2}]
 
 
 
