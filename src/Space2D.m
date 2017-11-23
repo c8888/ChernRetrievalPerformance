@@ -61,7 +61,14 @@ Begin["`Private`"]
 elementaryCell2D[xmin_, xmax_, ymin_, ymax_, \[Delta]x_, \[Delta]y_]:=
     Table[{x,y}, {x, N@xmin, N@xmax, N@\[Delta]x}, {y, N@ymin, N@ymax, N@\[Delta]y}]
 
-(* rectSupport[numCellsX_, numCellsY_]:= *)
+latticeProbingPointsBZ[npts_, a_, q_]:=
+    Module[
+      { (*we assume p=1 in p/q*2Pi flux*)
+        dkx = 2 Pi/(q * a) /npts,
+        dky = 2 Pi/a/npts
+      },
+      N@Table[{kx, ky}, {kx, 0, dkx*npts, dkx}, {ky, 0, dky*npts, dky}]
+    ]
 
 connect2DElementaryCells[numCellsX_, numCellsY_, elementaryCell2DValues_]:=
      Return@Transpose@Flatten[Table[Transpose[Flatten[Table[elementaryCell2DValues, 2 numCellsX + 1], 1]], 2 numCellsY + 1], 1];

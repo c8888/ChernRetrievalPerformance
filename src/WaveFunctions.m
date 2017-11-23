@@ -48,6 +48,9 @@ wannierRectangleTable::usage =
 wannierProject::usage =
     "wannierProject[array2D_, nodesNeighbourhood_, wannierRectangleTableValues_, \[Delta]x_, \[Delta]y_] returns a wave function vector in wannier function basis"
 
+overlapWannier::usage =
+    "overlapWannier[ck1_, ck2_] returns Abs[complexDotProduct[ck1, ck2]]^2"
+
 (* ---- Wave functions of specific models ---- *)
 
 waveFunctionAB::usage =

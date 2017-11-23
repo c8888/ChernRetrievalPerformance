@@ -98,12 +98,11 @@ phaseRetrieveSupport[FTXAbs_, support_, nIterations_, nRepeats_, nHIO_, gamma_]:
 
           If[Mod[i, nHIO]!=0,
           (*HIO case*)
-            xi = inverseSupport * (xiprim - gamma xi) + support * xi
+            xi = inverseSupport * (xiprim - gamma xi) + support * xi;
             ,
           (*ER case*)
-            xi *= support
-          ];
-
+            xi *= support;
+          ];,
           {i, nIterations}
         ];
         xierror=Total@Total@Abs[Abs[Fourier[xi]]^2-Abs[FTXAbs]^2];
