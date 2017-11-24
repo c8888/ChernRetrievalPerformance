@@ -55,6 +55,9 @@ nodesNeighbourhood::usage =
 normalise2DArray::usage =
     "normaliseArray[array_, \[Delta]x_, \[Delta]y_] normalises a 2D array assuming spacings between probing points are dx, dy"
 
+connectAndTranslate2DElementaryCells::usage =
+    "connectAndTranslate2DElementaryCells[numCellsX_, numCellsY_, elementaryCell2DValues_] creates lattice probing points list from elementary cell"
+
 
 Begin["`Private`"]
 
@@ -71,17 +74,25 @@ latticeProbingPointsBZ[npts_, a_, q_]:=
     ]
 
 connect2DElementaryCells[numCellsX_, numCellsY_, elementaryCell2DValues_]:=
-     Return@Transpose@Flatten[Table[Transpose[Flatten[Table[elementaryCell2DValues, 2 numCellsX + 1], 1]], 2 numCellsY + 1], 1];
+     Return@Transpose@Flatten[Table[Transpose[Flatten[Table[elementaryCell2DValues[[1;;-2, 1;;-2]], 2 numCellsX + 1], 1]], 2 numCellsY + 1], 1];
+
+connectAndTranslate2DElementaryCells[numCellsX_, numCellsY_, elementaryCell2DValues_, \[Delta]x_, \[Delta]y_]:=
+    Module[
+      {
+        deltaR =  {Max[elementaryCell2DValues[[All, All, 1]]] - Min[elementaryCell2DValues[[All, All, 1]]], Max[elementaryCell2DValues[[All, All, 2]]] - Min[elementaryCell2DValues[[All, All, 2]]]}
+      },
+      Return@Transpose@Flatten[Table[Transpose[Flatten[Table[Map[{i,j} deltaR + #&, elementaryCell2DValues[[1;;-2, 1;;-2]], {2}], {i, -numCellsX, numCellsX}], 1]], {j, -numCellsY, numCellsY}], 1]
+]
+
 
 addSupportRectAndDimensionalize[connect2DElementaryCellsTable_, marginSizeMinPercentageX_, marginSizeMinPercentageY_]:=
     Module[
       {
-        dims = Dimensions@connect2DElementaryCellsTable,
+        dims = Dimensions[connect2DElementaryCellsTable][[1;;2]],
         newDims,
         N1=0,
         N2=0
       },
-      If[Dimensions@dims != 2, Throw["Space2D_addSupportRectAndDimensionalize_Bad_Dimensions"]];
       newDims = Floor[{1 + marginSizeMinPercentageX / 100, 1 + marginSizeMinPercentageY / 100 } * dims];
 
       While[2^N1 <= newDims[[1]], N1++];
@@ -107,7 +118,7 @@ elementaryCell2DNodes[elementaryCellXYTable_, nodesExactPositions_]:=
 fullSpace2DNodes[elementaryCell2DNodes_, elementaryCellXYTable_, numCellsX_, numCellsY_]:=
     Module[
       {
-        elCellDims = Dimensions[elementaryCellXYTable][[1;;2]]
+        elCellDims = Dimensions[elementaryCellXYTable][[1;;2]] - 1
       },
 
       Return@Flatten[Map[

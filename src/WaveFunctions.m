@@ -53,6 +53,9 @@ overlapWannier::usage =
 
 (* ---- Wave functions of specific models ---- *)
 
+blochWave::usage =
+    "blochWave[fullSpaceXYTable_, k0_] returns bloch wave values in the whole space. Wave function has to be multiplied by it."
+
 waveFunctionAB::usage =
     "waveFunctionAB[elementaryCellXYTable_, k0_, a_, \[Sigma]w_, hamiltonianThetaPhi___] takes elementaryCellXYTable compatible with a (that is, points with coordinates {x,y}
 where -a/2 <= x <= 3/2a , -a/2 <= y <= a/2 ), state signature k0 = {k0x, k0y}, \[Sigma]w -- wannier function width and hamiltonianThetaPhi[k0] that should return
@@ -127,6 +130,9 @@ overlapWannier[ck1_, ck2_]:=
 
 (* ---- Wave functions of specific models ---- *)
 
+blochWave[fullSpaceXYTable_, k0_]:=
+    Return@Map[Exp[I k0.#]&, fullSpaceXYTable, {2}]
+
 waveFunctionAB[elementaryCellXYTable_, k0_, a_, \[Sigma]w_, hamiltonianThetaPhi___]:=
     Module[
       {
@@ -150,13 +156,12 @@ waveFunctionAB[elementaryCellXYTable_, k0_, a_, \[Sigma]w_, hamiltonianThetaPhi_
 *)
       (* Let's use convention presented in Lewenstein PRL 113 045303 (2014): choice of spinors.*)
       ret = Map[
-            s\[Theta]k02 *Exp[I k0.#] * Total@Function[r, Map[ wannier[r, #, \[Sigma]w, 1.]&, nodesA, {1}]][#]
-            - c\[Theta]k02 * expi\[Phi]k0 * Exp[I k0.(#-{a,0})] * Total@Function[r, Map[ wannier[r, #, \[Sigma]w, 1.]&, nodesB, {1}]][#] & ,
+            s\[Theta]k02 (*Exp[I k0.#]*) * Total@Function[r, Map[ wannier[r, #, \[Sigma]w, 1.]&, nodesA, {1}]][#]
+            - c\[Theta]k02 * expi\[Phi]k0 * Exp[I k0.((*#*)-{a,0})] * Total@Function[r, Map[ wannier[r, #, \[Sigma]w, 1.]&, nodesB, {1}]][#] & ,
         elementaryCellXYTable, {2}
       ];
-      Return[ret] (*not normalized yet*)
+      Return[ret] (*not normalized yet, no bloch wave*)
     ]
-
 
 
 
