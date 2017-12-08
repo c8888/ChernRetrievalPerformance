@@ -61,6 +61,7 @@ connectAndTranslate2DElementaryCells::usage =
 
 Begin["`Private`"]
 
+
 elementaryCell2D[xmin_, xmax_, ymin_, ymax_, \[Delta]x_, \[Delta]y_]:=
     Table[{x,y}, {x, N@xmin, N@xmax, N@\[Delta]x}, {y, N@ymin, N@ymax, N@\[Delta]y}]
 
@@ -74,7 +75,7 @@ latticeProbingPointsBZ[npts_, a_, q_]:=
     ]
 
 connect2DElementaryCells[numCellsX_, numCellsY_, elementaryCell2DValues_]:=
-     Return@Transpose@Flatten[Table[Transpose[Flatten[Table[elementaryCell2DValues[[1;;-2, 1;;-2]], 2 numCellsX + 1], 1]], 2 numCellsY + 1], 1];
+     Return@Transpose@Flatten[Table[Transpose[Flatten[Table[elementaryCell2DValues[[1;;-2, 1;;-2]], {i, -numCellsX, numCellsX}], 1]], {j, -numCellsY, numCellsY}], 1];
 
 connectAndTranslate2DElementaryCells[numCellsX_, numCellsY_, elementaryCell2DValues_, \[Delta]x_, \[Delta]y_]:=
     Module[
@@ -146,44 +147,29 @@ normalise2DArray[array_, \[Delta]x_, \[Delta]y_]:=
       array/Sqrt[Total[Total[Abs[array]^2]] * \[Delta]x * \[Delta]y]
     ]
 
-mirror2DSpace[FT0_] :=
+mirror2DSpace[FT_] :=
     Module[{
-      FT = FT0,
-      nCol = Dimensions[FT0][[1]],
-      nRow = Dimensions[FT0][[2]],
+      nCol = Dimensions[FT][[1]],
+      nRow = Dimensions[FT][[2]],
       ret,
       firstQuad,
       secondQuad,
       thirdQuad,
-      fourthQuad},
+      fourthQuad,
+      t1,
+      t2
+    },
     (* read quads *)
 
       firstQuad = FT[[1 ;; Floor[0.5*nCol], 1 ;; Floor[0.5*nRow]]];
-      secondQuad = FT[[1 ;; Floor[0.5*nCol], Floor[0.5*nRow] + 1 ;; nRow]];
-      thirdQuad =
-          FT[[Floor[0.5*nCol] + 1 ;; nCol, 1 ;; Floor[0.5*nRow]]];
-      fourthQuad =
-          FT[[Floor[0.5*nCol] + 1 ;; nCol, Floor[0.5*nRow] + 1 ;; nRow]];
+      thirdQuad = FT[[1 ;; Floor[0.5*nCol], Floor[0.5*nRow] + 1 ;; nRow]];
+      secondQuad = FT[[Floor[0.5*nCol] + 1 ;; nCol, 1 ;; Floor[0.5*nRow]]];
+      fourthQuad = FT[[Floor[0.5*nCol] + 1 ;; nCol, Floor[0.5*nRow] + 1 ;; nRow]];
 
-      (* Mirror *)
-      firstQuad = Reverse[Reverse[firstQuad], 2];
-      secondQuad = Reverse[Reverse[secondQuad], 2];
-      thirdQuad = Reverse[Reverse[thirdQuad], 2];
-      fourthQuad = Reverse[Reverse[fourthQuad], 2];
+      t1 = Join[secondQuad, firstQuad, 1];
+      t2 = Join[fourthQuad, thirdQuad, 1];
+      ret = Join[t2, t1, 2];
 
-      (* Take back together and return *)
-      ret = Table[
-        Which[
-          i <= Floor[0.5*nCol] && j <= Floor[0.5*nRow], firstQuad[[i, j]],
-          i <= Floor[0.5*nCol] && j > Floor[0.5*nRow],
-          secondQuad[[i, j - Floor[0.5*nRow]]],
-          i > Floor[0.5*nCol] && j <= Floor[0.5*nRow],
-          thirdQuad[[i - Floor[0.5*nCol], j]],
-          i > Floor[0.5*nCol] && j > Floor[0.5*nRow],
-          fourthQuad[[i - Floor[0.5*nCol], j - Floor[0.5*nRow]]]
-        ],
-        {i, nCol}, {j, nRow}
-      ]
     ]
 
 

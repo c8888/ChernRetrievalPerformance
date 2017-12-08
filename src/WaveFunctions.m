@@ -36,7 +36,7 @@ complexDotProduct::usage =
     "complexDotProduct[x, y] takes vectors x and y and returns hermitian_conjugate(y) . x"
 
 overlapArray::usage =
-    "overlapArray[array1, array2] calculates the squared overlap magnitude of two 2D matrices. We assume dx and dy do not change anywhere during execution of the program!"
+    "overlapArray[array1, array2, \[Delta]x_, \[Delta]y_] calculates the squared overlap magnitude of two 2D matrices. We assume dx and dy do not change anywhere during execution of the program!"
 
 supportHelper::usage =
     "supportHelper[elementaryCellXYTable_] returns wave function with value one in the whole elementary cell"
@@ -61,7 +61,7 @@ waveFunctionAB::usage =
 where -a/2 <= x <= 3/2a , -a/2 <= y <= a/2 ), state signature k0 = {k0x, k0y}, \[Sigma]w -- wannier function width and hamiltonianThetaPhi[k0] that should return
 proper thetak0 and phik0 angles depending on the properties of specific system. A table with structure of elementaryCellXYTable with calculated wave function values is returned."
 
-
+waveFunctionABStupid::usage = "temporary"
 
 Begin["`Private`"]
 
@@ -152,17 +152,47 @@ waveFunctionAB[elementaryCellXYTable_, k0_, a_, \[Sigma]w_, hamiltonianThetaPhi_
       (* Site A is located at {0,0}, site B is located at {a, 0}.
          Periodicity in x is 2a, periodicity in y is a.
        *)
-      (* We take into account only input from next-nearest neighbours defined in nodesA, nodesB (see p. 23 in lab notebook).
+      (* We take into account only the input from next-nearest neighbours defined in nodesA, nodesB (see p. 23 in lab notebook).
 *)
       (* Let's use convention presented in Lewenstein PRL 113 045303 (2014): choice of spinors.*)
       ret = Map[
-            s\[Theta]k02 (*Exp[I k0.#]*) * Total@Function[r, Map[ wannier[r, #, \[Sigma]w, 1.]&, nodesA, {1}]][#]
-            - c\[Theta]k02 * expi\[Phi]k0 * Exp[I k0.((*#*)-{a,0})] * Total@Function[r, Map[ wannier[r, #, \[Sigma]w, 1.]&, nodesB, {1}]][#] & ,
+        s\[Theta]k02 (*Exp[I k0.#]*) * Total@Function[r, Map[ wannier[r, #, \[Sigma]w, 1.]&, nodesA, {1}]][#]
+        - c\[Theta]k02 * expi\[Phi]k0 (*Exp[I k0.#]*) * Exp[-I k0.{a,0}] * Total@Function[r, Map[ wannier[r, #, \[Sigma]w, 1.]&, nodesB, {1}]][#] & ,
         elementaryCellXYTable, {2}
       ];
       Return[ret] (*not normalized yet, no bloch wave*)
     ]
 
+
+waveFunctionABStupid[fullSpaceXYTable_, k0_, a_, \[Sigma]w_, hamiltonianThetaPhi___]:=
+    Module[
+      {
+        ret,
+        \[Theta]k0,
+        \[Phi]k0,
+        c\[Theta]k02,
+        s\[Theta]k02,
+        expi\[Phi]k0,
+        nodesA = {{-2a,-a},{0,-a},{2a,-a},{-2a,0},{0,0},{2a,0}, {-2a,a},{0,a},{2a,a}},
+        nodesB = {{-a,-a},{a,-a},{3a,-a},{-a,0},{a,0},{3a,0}, {-a,a},{a,a},{3a,a}},
+        elCellDims = Dimensions@fullSpaceXYTable
+      },
+      {\[Theta]k0, \[Phi]k0} = hamiltonianThetaPhi[k0];
+      {c\[Theta]k02, s\[Theta]k02, expi\[Phi]k0} = {Cos[\[Theta]k0/2], Sin[\[Theta]k0/2], Exp[I \[Phi]k0]}; (* We do not want to calculate it many times. *)
+
+      (* Site A is located at {0,0}, site B is located at {a, 0}.
+         Periodicity in x is 2a, periodicity in y is a.
+       *)
+      (* We take into account only the input from next-nearest neighbours defined in nodesA, nodesB (see p. 23 in lab notebook).
+*)
+      (* Let's use convention presented in Lewenstein PRL 113 045303 (2014): choice of spinors.*)
+      ret = Map[
+        s\[Theta]k02 Exp[I k0.#] * Total@Function[r, Map[ wannier[r, #, \[Sigma]w, 1.]&, nodesA, {1}]][#]
+            - c\[Theta]k02 * expi\[Phi]k0 Exp[I k0.#] * Exp[-I k0.{a,0}] * Total@Function[r, Map[ wannier[r, #, \[Sigma]w, 1.]&, nodesB, {1}]][#] & ,
+        fullSpaceXYTable, {2}
+      ];
+      Return[ret] (*not normalized yet, no bloch wave*)
+    ]
 
 
 End[] (* `Private` *)
