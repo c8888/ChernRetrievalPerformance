@@ -17,8 +17,7 @@ numCellsX = 5;
 numCellsY = 5;
 q = 3;
 gx = 2; gy = 2;
-dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)*
-    gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
+dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)* gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
 "2^N" *)
 \[Sigma]w = 0.1;
 rangeRectangleSizeX = 3;
@@ -26,11 +25,11 @@ rangeRectangleSizeY = 3;
 a = 1;
 J = 1;
 J1 = 2;
-nIterations = 1200;
+nIterations = 1000;
 nRepeats = 1;
 nHIO = 20;
 gamma = 0.9;
-npts = 10;(*points in the 1st Brillouin zone*)
+npts = 8;(*points in the 1st Brillouin zone*)
 n = 1; (* band number 1...q *)
 nSets = 10; (* Number of separate phase retrievals. Each phase retrieval gives a single chern number. *)
 
@@ -115,9 +114,13 @@ wannierRectangleTableValues =
 
 (**************************************************************)
 (* PHASE RETRIEVAL *)
+protocolAdd["$ProcessorCount = "<> ToString[$ProcessorCount]];
+protocolBar[];
+
 ckRetrSupportTable =
     ParallelMap[
-      findCkRetrSupportQ[(wf =
+      Module[{wf},
+        findCkRetrSupportQ[(wf =
           fastFullSpaceWfQRSpace[#[[1]], #[[2]],
             myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
                 n]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
@@ -127,7 +130,7 @@ ckRetrSupportTable =
           wannierRectangleTableValues, \[Delta]x, \[Delta]y],
         nodesNeighbourhoods,
         wannierRectangleTableValues, \[Delta]x, \[Delta]y, support,
-        nIterations, nRepeats, nHIO, gamma, nSets] &, BZ, {2},
+        nIterations, nRepeats, nHIO, gamma, nSets]] &, BZ, {2},
       DistributedContexts -> All];
 
 FxyTRetrSupportTable =
@@ -152,6 +155,7 @@ Export["../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <>
   wRetrSupportTable];
 
 protocolAdd["wRetrSupportTable = " <> ToString[wRetrSupportTable]];
+protocolBar[];
 
 t2 = DateList[];
 protocolMaxMemoryUsed[];
