@@ -7,7 +7,7 @@
 (* :Date: 2017-11-19 *)
 
 (* :Package Version: 0.1 *)
-(* :Mathematica Version: *)
+(* :Mathematica Version: 11.1 *)
 (* :Copyright: (c) 2017 c8888 *)
 (* :Keywords: *)
 (* :Discussion: Implementations of Hybrid Input-Output Algorithm. Takes a table with absolute value in Fourier 2D space
@@ -26,7 +26,8 @@ phaseRetrieveGuess::usage =
 
 Begin["`Private`"]
 
-phaseRetrieveGuess[FTXAbs_, wavefAbs_, support_, nIterations_, nRepeats_, nHIO_, gamma_]:= (* returns table of a retrieved object *)
+phaseRetrieveGuess[FTXAbs_, wavefAbs_, support_, nIterations_, nRepeats_, nHIO_, gamma_]:= (* returns table of a
+    retrieved object *)
     Module[ {
       nCol,
       nRow,
@@ -71,13 +72,13 @@ phaseRetrieveGuess[FTXAbs_, wavefAbs_, support_, nIterations_, nRepeats_, nHIO_,
 
     ]
 
+
 phaseRetrieveSupport[FTXAbs_, support_, nIterations_, nRepeats_, nHIO_, gamma_]:= (* returns table of a retrieved object *)
     Module[ {
       nCol,
       nRow,
       xi={},
       xiprim={},
-      xibis={},
       xierror,
       retrerror,
       retr={},

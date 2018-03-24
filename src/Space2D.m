@@ -7,7 +7,7 @@
 (* :Date: 2017-11-19 *)
 
 (* :Package Version: 0.1 *)
-(* :Mathematica Version: *)
+(* :Mathematica Version: 11.1 *)
 (* :Copyright: (c) 2017 c8888 *)
 (* :Keywords: *)
 (* :Discussion: Here all spatial structures are created. *)
@@ -18,6 +18,9 @@ BeginPackage["Space2D`"]
 elementaryCell2D::usage =
     "elementaryCell2D[xmin_, xmax_, ymin_, ymax_, \[Delta]x_, \[Delta]y_] Constructs 2D table with point coordinates for elementary cell.
     Should me matched perfectly with a chosen wave function."
+
+latticeProbingPointsBZ::usage =
+    "latticeProbingPointsBZ[npts_, a_, q_] Constructs a 2D table with npts*npts k0 vectors from 1st BZ."
 
 connect2DElementaryCells::usage =
     "connect2DElementaryCells[numCellsX_, numCellsY_, elementaryCell2DValues_] connects elementary cells and constructs
@@ -34,6 +37,9 @@ addSupportRectAndDimensionalize::usage =
 
 mirror2DSpace::usage =
     "mirror2DSpace[FT0] mirrors the 2Dtable with respect to {0,0} coordinate. Corners come to the middle and vice versa."
+
+mirrorXY::usage =
+    "mirrors 2D table with respect to y=x line"
 
 elementaryCell2DNodes::usage =
     "elementaryCell2DNodes[elementaryCellXYTable_, nodesExactPositions_] takes an elementary cell table with x y coordinates and a list of lattice nodes and
@@ -84,7 +90,6 @@ connectAndTranslate2DElementaryCells[numCellsX_, numCellsY_, elementaryCell2DVal
       },
       Return@Transpose@Flatten[Table[Transpose[Flatten[Table[Map[{i,j} deltaR + #&, elementaryCell2DValues[[1;;-2, 1;;-2]], {2}], {i, -numCellsX, numCellsX}], 1]], {j, -numCellsY, numCellsY}], 1]
 ]
-
 
 addSupportRectAndDimensionalize[connect2DElementaryCellsTable_, marginSizeMinPercentageX_, marginSizeMinPercentageY_]:=
     Module[
@@ -169,10 +174,10 @@ mirror2DSpace[FT_] :=
       t1 = Join[secondQuad, firstQuad, 1];
       t2 = Join[fourthQuad, thirdQuad, 1];
       ret = Join[t2, t1, 2];
-
+      Return[ret];
     ]
 
-
+mirrorXY[lat_]:= Reverse[Conjugate[Reverse[lat]], 2]
 
 End[] (* `Private` *)
 

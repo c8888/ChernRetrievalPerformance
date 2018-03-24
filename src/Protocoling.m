@@ -7,7 +7,7 @@
 (* :Date: 2017-11-20 *)
 
 (* :Package Version: 0.1 *)
-(* :Mathematica Version: *)
+(* :Mathematica Version: 11.1 *)
 (* :Copyright: (c) 2017 c8888 *)
 (* :Keywords: *)
 (* :Discussion: *)
@@ -24,7 +24,8 @@ protocolBar::usage =
 
 Begin["`Private`"]
 
-protocolAdd[stringMessage_]:=PutAppend[stringMessage, "out/" <> ToString[Last@$CommandLine] <> "_"  <> ToString[$ProcessID] <> "protocol.txt"]
+protocolAdd[stringMessage_]:=PutAppend[stringMessage, "../out/" <> ToString[Last@$CommandLine] <> "_"  <>
+    ToString[$ProcessID] <> "protocol.txt"]
 protocolMaxMemoryUsed[]:=protocolAdd["Max memory used (GB): " <> ToString[MaxMemoryUsed[]/1024.^3]]
 protocolBar[]:=Module[{}, protocolAdd[" "]; protocolAdd["*************************************************"]; protocolAdd[" "];]
 
