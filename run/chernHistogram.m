@@ -9,6 +9,9 @@ Needs["HIOER`", "../src/HIOER.m"];
 Needs["ChernCalc`", "../src/ChernCalc.m"];
 Needs["Protocoling`", "../src/Protocoling.m"];
 
+SetSystemOptions["ParallelOptions" -> "ParallelThreadNumber" -> 1];
+SetSystemOptions["ParallelOptions" -> "MKLThreadNumber" -> 1];
+
 t1 = DateList[];
 protocolAdd[ToString[t1] <> " Program started."];
 (**************************************************************)
@@ -118,7 +121,7 @@ protocolAdd["$ProcessorCount = "<> ToString[$ProcessorCount]];
 protocolBar[];
 
 ckRetrSupportTable =
-    ParallelMap[
+    Map[
       Module[{wf},
         findCkRetrSupportQ[(wf =
           fastFullSpaceWfQRSpace[#[[1]], #[[2]],
@@ -130,8 +133,8 @@ ckRetrSupportTable =
           wannierRectangleTableValues, \[Delta]x, \[Delta]y],
         nodesNeighbourhoods,
         wannierRectangleTableValues, \[Delta]x, \[Delta]y, support,
-        nIterations, nRepeats, nHIO, gamma, nSets]] &, BZ, {2},
-      DistributedContexts -> All];
+        nIterations, nRepeats, nHIO, gamma, nSets]] &, BZ, {2}(*,
+      DistributedContexts -> All*)];
 
 FxyTRetrSupportTable =
     Table[FxyT[ckRetrSupportTable[[All, All, i, 1, All]]], {i, 1,
