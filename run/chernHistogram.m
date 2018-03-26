@@ -16,25 +16,25 @@ t1 = DateList[];
 protocolAdd[ToString[t1] <> " Program started."];
 (**************************************************************)
 
-numCellsX = 5;
-numCellsY = 5;
+numCellsX = 2;
+numCellsY = 2;
 q = 3;
 gx = 2; gy = 2;
 dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)* gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
 "2^N" *)
-\[Sigma]w = 0.1;
+\[Sigma]w = 0.2;
 rangeRectangleSizeX = 3;
 rangeRectangleSizeY = 3;
 a = 1;
 J = 1;
-J1 = 2;
-nIterations = 1000;
+J1 = 3;
+nIterations = 2500;
 nRepeats = 1;
 nHIO = 20;
 gamma = 0.9;
-npts = 8;(*points in the 1st Brillouin zone*)
+npts = 9;(*points in the 1st Brillouin zone*)
 n = 1; (* band number 1...q *)
-nSets = 10; (* Number of separate phase retrievals. Each phase retrieval gives a single chern number. *)
+nSets = 2; (* Number of separate phase retrievals. Each phase retrieval gives a single chern number. *)
 
 (**************************************************************)
 protocolBar[];

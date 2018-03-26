@@ -45,13 +45,28 @@ FxyT[ckBZ_] :=
 findCkRetrSupportQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
   wannierRectangleTableValues_, \[Delta]x_, \[Delta]y_, support_, nIterations_, nRepeats_, nHIO_, gamma_, nSets_] :=
       Module[{
-        ckRetr
+        ckRetr,
+        ckRetrMirror,
+        retr,
+        overlapRetr,
+        overlapRetrMirror
       },
         Return@Table[
-          {(ckRetr = wannierProject[phaseRetrieveSupport[Abs@Fourier[wfQRSpaceFullSpace], support, nIterations,
-          nRepeats, nHIO, gamma],
-          nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x, \[Delta]y]),
-            Abs[ckRetr.Conjugate[ckModel]]^2},
+            retr = phaseRetrieveSupport[Abs@Fourier[wfQRSpaceFullSpace], support, nIterations,
+              nRepeats, nHIO, gamma];
+
+            ckRetr = wannierProject[retr, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x, \[Delta]y];
+            overlapRetr = Abs[ckRetr.Conjugate[ckModel]]^2;
+
+            ckRetrMirror = wannierProject[mirrorXY[retr], nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x,
+              \[Delta]y];
+            overlapRetrMirror = Abs[ckRetrMirror.Conjugate[ckModel]]^2;
+
+            If[overlapRetr > overlapRetrMirror,
+              {ckRetr, overlapRetr},
+              {ckRetrMirror, overlapRetrMirror}
+            ]
+            ,
         nSets]
   ]
 
