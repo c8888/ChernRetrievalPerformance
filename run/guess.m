@@ -1,15 +1,15 @@
 (* Mathematica Source File  *)
 (* Created by Mathematica Plugin for IntelliJ IDEA *)
 (* :Author: c8888 *)
-(* :Date: 2018-03-28 *)
+(* :Date: 2018-03-30 *)
 
 Needs["Space2D`", "../src/Space2D.m"];
 Needs["WaveFunctions`", "../src/WaveFunctions.m"];
 Needs["HIOER`", "../src/HIOER.m"];
 Needs["Protocoling`", "../src/Protocoling.m"];
 
-SetSystemOptions["ParallelOptions" -> "ParallelThreadNumber" -> 2];
-SetSystemOptions["ParallelOptions" -> "MKLThreadNumber" -> 2];
+SetSystemOptions["ParallelOptions" -> "ParallelThreadNumber" -> 64];
+SetSystemOptions["ParallelOptions" -> "MKLThreadNumber" -> 64];
 
 t1 = DateList[];
 protocolAdd[ToString[t1] <> " Program started."];
@@ -27,15 +27,17 @@ rangeRectangleSizeY = 3;
 a = 1;
 J = 1;
 J1 = 3;
-nIterations = 200;
+nIterations = 1000;
 nRepeats = 1;
 nHIO = 20;
 gamma = 0.9;
 n = 1; (* band number 1...q *)
-nx1 = 3;
-ny1 = 1;
-numTheta = 15; (* how many points are taken as a starting guess *)
-numPhi = 15;
+nx1 = 0;
+ny1 = 2;
+numTheta = 20; (* how many points are taken as a starting guess *)
+numPhi = 20;
+numPhi1 = 20;
+numPhi2 = 20;
 
 (**************************************************************)
 protocolBar[];
@@ -64,6 +66,8 @@ protocolAdd["nx1 = "<> ToString[nx1] ];
 protocolAdd["ny1 = "<> ToString[ny1] ];
 protocolAdd["numTheta = "<> ToString[numTheta] ];
 protocolAdd["numPhi = "<> ToString[numPhi] ];
+protocolAdd["numPhi1 = "<> ToString[numPhi1] ];
+protocolAdd["numPhi2 = "<> ToString[numPhi2] ];
 
 
 protocolBar[];
@@ -123,9 +127,11 @@ protocolAdd["$ProcessorCount = "<> ToString[$ProcessorCount]];
 protocolBar[];
 protocolAdd["{uAModel, uBModel, uCModel} = " <> ToString[myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
     n]]&[{nx1 gx \[Delta]kx, ny1 gy \[Delta]ky}]]];
-protocolAdd["{r, \[Theta]model, \[Phi]model} = (+-)" <> ToString[N@CoordinateTransformData["Cartesian" -> "Spherical",
+protocolAdd["{r, \[Theta]model, \[Phi]model} = (+-)" <> ToString[N@CoordinateTransformData["Cartesian"
+    ->
+    "Spherical",
   "Mapping", Abs@myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
-      n]]]&[{nx1 gx \[Delta]kx, ny1 gy \[Delta]ky}]]]
+      n]]]&[{nx1 gx \[Delta]kx, ny1 gy \[Delta]ky}]]];
 
 wf = fastFullSpaceWfQRSpace[#[[1]], #[[2]],
   myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
@@ -136,29 +142,31 @@ wf = fastFullSpaceWfQRSpace[#[[1]], #[[2]],
 FTAbswf = Abs@Fourier@wf;
 ckModel = wannierProject[wf, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x, \[Delta]y];
 
-startHintTable = ParallelTable[
+guessTable = ParallelTable[
   {
     \[Theta],
     \[Phi],
     Max[{overlapWannier[ckModel, wannierProject[#, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x,
       \[Delta]y]],
-    overlapWannier[ckModel,  wannierProject[mirrorXY[#], nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x,
-    \[Delta]y]]}],
+      overlapWannier[ckModel,  wannierProject[mirrorXY[#], nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x,
+        \[Delta]y]]}],
     Total@Total@Abs[Abs[Fourier[#]]^2-Abs[FTAbswf]^2],
     overlapArray[Abs[Fourier[#]]^2, FTAbswf^2, \[Delta]kx, \[Delta]ky]
-}&
+  }&
   [
-    phaseRetrieveSupportStartHint[Abs@Fourier@wf,
-    fastFullSpaceWfQRSpace[nx1 gx \[Delta]kx, ny1 gy \[Delta]ky,
-      N@CoordinateTransformData["Spherical" -> "Cartesian",
-        "Mapping", {1, \[Theta], \[Phi]}], \[Sigma]w, numCellsX, numCellsY,
-      nodesExactPositions, elementaryCellXYTable,
-      fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx,
-      dimy], support,
-    nIterations, nRepeats, nHIO, gamma]
+    phaseRetrieveGuess[FTAbswf,
+      Abs[fastFullSpaceWfQRSpace[nx1 gx \[Delta]kx, ny1 gy \[Delta]ky,
+        N@CoordinateTransformData["Spherical" -> "Cartesian",
+          "Mapping", {1, \[Theta], \[Phi]}]*{1, Exp[I \[Phi]1],
+          Exp[I \[Phi]2]}, \[Sigma]w, numCellsX, numCellsY,
+        nodesExactPositions, elementaryCellXYTable,
+        fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx,
+        dimy]], support,
+      nIterations, nRepeats, nHIO, gamma]
   ]
-,
+  ,
   {\[Theta], 0.01, Pi-0.01, 1.Pi/numTheta}, {\[Phi], -Pi+0.01, Pi-0.01, 2.Pi/numPhi},
+  {\[Phi]1, -Pi+0.01, Pi-0.01, 2.Pi/numPhi1},{\[Phi]2, -Pi+0.01, Pi-0.01, 2.Pi/numPhi2},
   DistributedContexts -> All
 ]
 
@@ -167,12 +175,13 @@ startHintTable = ParallelTable[
 (**************************************************************)
 (* SAVE DATA *)
 
-Export["../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "startHintTable_nx1=" <>
-    ToString[nx1] <> "_ny1=" <> ToString[ny1] <>".mx", startHintTable];
+Export["../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "guess_nx1=" <>
+    ToString[nx1] <> "_ny1=" <> ToString[ny1] <>".mx", guessTable];
 
-protocolAdd["File structure: {theta, phi, Max[{overlapWannier[model, retr], overlapWannier[model, mirrorXY@retr]],
-total distance in K-Space, overlapArray of Abs^2 in K-Space"]
-protocolAdd["File saved to " <> "../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "startHintTable_nx1=" <>
+protocolAdd["File structure: {theta, phi, phi1, phi2, Max[{overlapWannier[model, retr], overlapWannier[model,
+mirrorXY@retr]], total distance in K-Space, overlapArray of Abs^2 in K-Space"]
+protocolAdd["File saved to " <> "../out/" <> ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <>
+    "guess_nx1=" <>
     ToString[nx1] <> "_ny1=" <> ToString[ny1] <>".mx"];
 
 
