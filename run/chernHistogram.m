@@ -34,7 +34,7 @@ nHIO = 20;
 gamma = 0.9;
 npts = 9;(*points in the 1st Brillouin zone*)
 n = 1; (* band number 1...q *)
-nSets = 2; (* Number of separate phase retrievals. Each phase retrieval gives a single chern number. *)
+nSets = 6; (* Number of separate phase retrievals. Each phase retrieval gives a single chern number. *)
 
 (**************************************************************)
 protocolBar[];
@@ -150,12 +150,16 @@ wRetrSupportTable =
 
 Export["../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "ckRetrSupportTable.mx",
   ckRetrSupportTable];
+protocolAdd["File saved to ../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <>
+    "ckRetrSupportTable.mx"];
 
 Export["../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "FxyTRetrSupportTable.mx",
   FxyTRetrSupportTable];
+protocolAdd["File saved to ../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "FxyTRetrSupportTable.mx"];
 
 Export["../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "wRetrSupportTable.mx",
   wRetrSupportTable];
+protocolAdd["File saved to ../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "wRetrSupportTable.mx"];
 
 protocolAdd["wRetrSupportTable = " <> ToString[wRetrSupportTable]];
 protocolBar[];

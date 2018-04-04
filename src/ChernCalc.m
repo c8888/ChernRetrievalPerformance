@@ -49,11 +49,13 @@ findCkRetrSupportQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
         ckRetrMirror,
         retr,
         overlapRetr,
-        overlapRetrMirror
+        overlapRetrMirror,
+        distKSpace
       },
         Return@Table[
             retr = phaseRetrieveSupport[Abs@Fourier[wfQRSpaceFullSpace], support, nIterations,
               nRepeats, nHIO, gamma];
+            distKSpace = Total@Total@Abs[Abs[Fourier[wfQRSpaceFullSpace]]^2-Abs[Fourier[retr]]^2];
 
             ckRetr = wannierProject[retr, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x, \[Delta]y];
             overlapRetr = Abs[ckRetr.Conjugate[ckModel]]^2;
@@ -63,8 +65,8 @@ findCkRetrSupportQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
             overlapRetrMirror = Abs[ckRetrMirror.Conjugate[ckModel]]^2;
 
             If[overlapRetr > overlapRetrMirror,
-              {ckRetr, overlapRetr},
-              {ckRetrMirror, overlapRetrMirror}
+              {ckRetr, overlapRetr, distKSpace},
+              {ckRetrMirror, overlapRetrMirror, distKSpace}
             ]
             ,
         nSets]

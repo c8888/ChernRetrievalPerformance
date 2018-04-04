@@ -306,8 +306,9 @@ fastFullSpaceWfQRSpace[k0x_, k0y_, stateVectorQ_, \[Sigma]w_, numCellsX_,
       norm = Sqrt[Total@Total[Abs[wfQRSpaceElCell]^2] \[Delta]x \[Delta]y];
       Return[
           CenterArray[
-            1/(norm*Sqrt[(2 numCellsX + 1) (2 numCellsY + 1)]) blochWave[
-              fullSpaceXYTable, {k0x, k0y}]*
+            1/(norm*Sqrt[(2 numCellsX + 1) (2 numCellsY + 1)]) (*blochWave[
+              fullSpaceXYTable, {k0x, k0y}]*)connectBlochPhase2DElementaryCells[k0x, k0y, numCellsX,
+              numCellsY, elementaryCellXYTable, Length@stateVectorQ*1, 1]*
                 connect2DElementaryCells[numCellsX, numCellsY,
                   wfQRSpaceElCell], {dimx, dimy}]
       ]

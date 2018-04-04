@@ -64,6 +64,9 @@ normalise2DArray::usage =
 connectAndTranslate2DElementaryCells::usage =
     "connectAndTranslate2DElementaryCells[numCellsX_, numCellsY_, elementaryCell2DValues_] creates lattice probing points list from elementary cell"
 
+connectBlochPhase2DElementaryCells::usage =
+    "connectBlochPhase2DElementaryCells[k0x_, k0y_, numCellsX_, numCellsY_, elementaryCell2DValues_, ax_, ay_]
+    creates bloch wave in tight binding model (phase is constant in the whole (m,n)-th elementary cell)."
 
 Begin["`Private`"]
 
@@ -90,6 +93,11 @@ connectAndTranslate2DElementaryCells[numCellsX_, numCellsY_, elementaryCell2DVal
       },
       Return@Transpose@Flatten[Table[Transpose[Flatten[Table[Map[{i,j} deltaR + #&, elementaryCell2DValues[[1;;-2, 1;;-2]], {2}], {i, -numCellsX, numCellsX}], 1]], {j, -numCellsY, numCellsY}], 1]
 ]
+
+connectBlochPhase2DElementaryCells[k0x_, k0y_, numCellsX_, numCellsY_, elementaryCell2DValues_, ax_, ay_]:=
+      Return@Transpose@Flatten[Table[Transpose[Flatten[Table[Map[Exp[-I(i*ax*k0x+j*ay*k0y)]&,
+        elementaryCell2DValues[[1;;-2,
+          1;;-2]], {2}], {i, -numCellsX, numCellsX}], 1]], {j, -numCellsY, numCellsY}], 1]
 
 addSupportRectAndDimensionalize[connect2DElementaryCellsTable_, marginSizeMinPercentageX_, marginSizeMinPercentageY_]:=
     Module[
@@ -177,7 +185,15 @@ mirror2DSpace[FT_] :=
       Return[ret];
     ]
 
-mirrorXY[lat_]:= Reverse[Conjugate[Reverse[lat]], 2]
+mirrorXY[lat_]:=
+    Which[
+    EvenQ[Dimensions[lat]] == {True, True}, Map[RotateRight[#, 1]&, RotateRight[Reverse[Conjugate[Reverse[lat]], 2]],
+      1],
+    EvenQ[Dimensions[lat]] == {False, False}, Reverse[Conjugate[Reverse[lat]], 2] (* no "roll" *),
+    EvenQ[Dimensions[lat]] == {True, False}, Map[RotateRight[#, 1]&, Reverse[Conjugate[Reverse[lat]], 2], 1],
+    EvenQ[Dimensions[lat]] == {False, True}, RotateRight[Reverse[Conjugate[Reverse[lat]], 2], 1]
+]
+
 
 End[] (* `Private` *)
 
