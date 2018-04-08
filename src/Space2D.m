@@ -68,6 +68,10 @@ connectBlochPhase2DElementaryCells::usage =
     "connectBlochPhase2DElementaryCells[k0x_, k0y_, numCellsX_, numCellsY_, elementaryCell2DValues_, ax_, ay_]
     creates bloch wave in tight binding model (phase is constant in the whole (m,n)-th elementary cell)."
 
+meanCkAbs::usage =
+    "meanCkAbs[ckTab_, q_] takes a table of ck and returns Abs of them averaged over the same type of nodes. Works
+    only for rectangular support!!!!!!!! Used as an additional phase retrieval constraint."
+
 Begin["`Private`"]
 
 
@@ -194,6 +198,11 @@ mirrorXY[lat_]:=
     EvenQ[Dimensions[lat]] == {False, True}, RotateRight[Reverse[Conjugate[Reverse[lat]], 2], 1]
 ]
 
+meanCkAbs[ckTab_, q_] :=
+    Normalize@
+        Table[Mean[
+          Abs[ckTab[[1 + i*Length[ckTab]/q ;; (i + 1)*
+              Length[ckTab]/q]]]], {i, 0, q - 1}]
 
 End[] (* `Private` *)
 

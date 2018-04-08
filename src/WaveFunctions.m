@@ -108,6 +108,11 @@ fastFullSpaceWfQRSpace::usage =
   numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
   fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_] return full space table generated from bloch wave and wave
    function in elementary cell."
+fastFullSpaceWfQRSpaceAbs::usage =
+    "fastFullSpaceWfQRSpaceAbs[stateVectorQ_, \[Sigma]w_, numCellsX_,
+  numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
+  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_] works identical to fastFullSpaceWfQRSpace except it
+  returns only the absolute value. Because of that it is faster since no bloch wave has to be constructed."
 
 Begin["`Private`"]
 
@@ -311,6 +316,24 @@ fastFullSpaceWfQRSpace[k0x_, k0y_, stateVectorQ_, \[Sigma]w_, numCellsX_,
               numCellsY, elementaryCellXYTable, Length@stateVectorQ*1, 1]*
                 connect2DElementaryCells[numCellsX, numCellsY,
                   wfQRSpaceElCell], {dimx, dimy}]
+      ]
+    ]
+
+fastFullSpaceWfQRSpaceAbs[stateVectorQ_, \[Sigma]w_, numCellsX_,
+  numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
+  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_] :=
+    Module[{
+      wfQRSpaceElCell,
+      norm
+    },
+      wfQRSpaceElCell =
+          Abs@waveFunctionQ[elementaryCellXYTable, 0, 0, \[Sigma]w,
+            stateVectorQ, nodesExactPositions];
+      norm = Sqrt[Total@Total[Abs[wfQRSpaceElCell]^2] \[Delta]x \[Delta]y];
+      Return[
+        CenterArray[
+          1/(norm*Sqrt[(2 numCellsX + 1) (2 numCellsY + 1)])*connect2DElementaryCells[numCellsX, numCellsY,
+                wfQRSpaceElCell], {dimx, dimy}]
       ]
     ]
 

@@ -27,6 +27,14 @@ findCkRetrSupportQ::usage =
     "findCkRetrSupportQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
   wannierRectangleTableValues_, \[Delta]x_, \[Delta]y_, support_, nIterations_, nRepeats_, nHIO_, gamma_, nSets_] returns a table of model wave function in wannier basis
   for given Harper model parameters"
+findCkRetrSupportAbsImposeQ::usage =
+    "findCkRetrSupportAbsImposeQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
+  wannierRectangleTableValues_, \[Delta]x_, \[Delta]y_, support_, nIterations_, nRepeats_, nHIO_, gamma_, nSets_,
+  nEREnd_, nAbsImpose_,
+  nAbsImposeStart_, nAbsImposeEnd_, q_, \[Sigma]w_,
+  numCellsX_, numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
+  fullSpaceXYTable_] eturns a table of model wave function in wannier basis
+  for given Harper model parameters"
 
 Begin["`Private`"]
 
@@ -55,7 +63,8 @@ findCkRetrSupportQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
         Return@Table[
             retr = phaseRetrieveSupport[Abs@Fourier[wfQRSpaceFullSpace], support, nIterations,
               nRepeats, nHIO, gamma];
-            distKSpace = Total@Total@Abs[Abs[Fourier[wfQRSpaceFullSpace]]^2-Abs[Fourier[retr]]^2];
+            distKSpace = 1/Total[Total[Abs[Fourier[wfQRSpaceFullSpace]]^2]]*Total@Total[Abs[Abs[Fourier
+            [wfQRSpaceFullSpace]]-Abs[Fourier[retr]]]];
 
             ckRetr = wannierProject[retr, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x, \[Delta]y];
             overlapRetr = Abs[ckRetr.Conjugate[ckModel]]^2;
@@ -71,6 +80,43 @@ findCkRetrSupportQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
             ,
         nSets]
   ]
+findCkRetrSupportAbsImposeQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
+  wannierRectangleTableValues_, \[Delta]x_, \[Delta]y_, support_, nIterations_, nRepeats_, nHIO_, gamma_, nSets_,
+  nEREnd_, nAbsImpose_,
+  nAbsImposeStart_, nAbsImposeEnd_, q_, \[Sigma]w_,
+  numCellsX_, numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
+  fullSpaceXYTable_] :=
+    Module[{
+      ckRetr,
+      ckRetrMirror,
+      retr,
+      overlapRetr,
+      overlapRetrMirror,
+      distKSpace
+    },
+      Return@Table[
+        retr = phaseRetrieveSupportAbsImpose[Abs@Fourier[wfQRSpaceFullSpace], support, nIterations, nRepeats, nHIO, gamma, nEREnd, nAbsImpose,
+          nAbsImposeStart, nAbsImposeEnd, nodesNeighbourhoods,
+          wannierRectangleTableValues, \[Delta]x, \[Delta]y, q, \[Sigma]w,
+          numCellsX, numCellsY, nodesExactPositions, elementaryCellXYTable,
+          fullSpaceXYTable];
+        distKSpace = 1/Total[Total[Abs[Fourier[wfQRSpaceFullSpace]]^2]]*Total@Total[Abs[Abs[Fourier
+        [wfQRSpaceFullSpace]]-Abs[Fourier[retr]]]];
+
+        ckRetr = wannierProject[retr, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x, \[Delta]y];
+        overlapRetr = Abs[ckRetr.Conjugate[ckModel]]^2;
+
+        ckRetrMirror = wannierProject[mirrorXY[retr], nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x,
+          \[Delta]y];
+        overlapRetrMirror = Abs[ckRetrMirror.Conjugate[ckModel]]^2;
+
+        If[overlapRetr > overlapRetrMirror,
+          {ckRetr, overlapRetr, distKSpace},
+          {ckRetrMirror, overlapRetrMirror, distKSpace}
+        ]
+        ,
+        nSets]
+    ]
 
 End[] (* `Private` *)
 

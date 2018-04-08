@@ -22,19 +22,23 @@ q = 3;
 gx = 2; gy = 2;
 dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)* gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
 "2^N" *)
-\[Sigma]w = 0.2;
-rangeRectangleSizeX = 3;
-rangeRectangleSizeY = 3;
+\[Sigma]w = 0.155;
+rangeRectangleSizeX = 1.5;
+rangeRectangleSizeY = 1.5;
 a = 1;
 J = 1;
 J1 = 3;
-nIterations = 2500;
+nIterations = 500;
 nRepeats = 1;
 nHIO = 20;
 gamma = 0.9;
 npts = 9;(*points in the 1st Brillouin zone*)
 n = 1; (* band number 1...q *)
 nSets = 6; (* Number of separate phase retrievals. Each phase retrieval gives a single chern number. *)
+nEREnd = 100;
+nAbsImpose = 3;
+nAbsImposeStart = 0;
+nAbsImposeEnd = nIterations;
 
 (**************************************************************)
 protocolBar[];
@@ -61,6 +65,12 @@ protocolAdd["gamma = "<> ToString[gamma] ];
 protocolAdd["npts = "<> ToString[npts] ];
 protocolAdd["n = "<> ToString[n] ];
 protocolAdd["nSets = "<> ToString[nSets] ];
+protocolAdd["nEREnd = "<> ToString[nEREnd] ];
+protocolAdd["nAbsImpose = "<> ToString[nAbsImpose] ];
+protocolAdd["nAbsImposeStart = "<> ToString[nAbsImposeStart] ];
+protocolAdd["nAbsImposeEnd = "<> ToString[nAbsImposeEnd] ];
+
+
 
 protocolBar[];
 
@@ -123,7 +133,7 @@ protocolBar[];
 ckRetrSupportTable =
     Map[
       Module[{wf},
-        findCkRetrSupportQ[(wf =
+        (*findCkRetrSupportQ[(wf =
           fastFullSpaceWfQRSpace[#[[1]], #[[2]],
             myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
                 n]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
@@ -133,7 +143,22 @@ ckRetrSupportTable =
           wannierRectangleTableValues, \[Delta]x, \[Delta]y],
         nodesNeighbourhoods,
         wannierRectangleTableValues, \[Delta]x, \[Delta]y, support,
-        nIterations, nRepeats, nHIO, gamma, nSets]] &, BZ, {2}(*,
+        nIterations, nRepeats, nHIO, gamma, nSets]*)
+        protocolAdd["{kx,ky}=" <> ToString[#]];
+        findCkRetrSupportAbsImposeQ[(wf =
+            fastFullSpaceWfQRSpace[#[[1]], #[[2]],
+              myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
+                  n]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
+              elementaryCellXYTable,
+              fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy]),
+          wannierProject[wf, nodesNeighbourhoods,
+            wannierRectangleTableValues, \[Delta]x, \[Delta]y],
+          nodesNeighbourhoods,
+          wannierRectangleTableValues, \[Delta]x, \[Delta]y, support,
+          nIterations, nRepeats, nHIO, gamma, nSets, nEREnd, nAbsImpose,
+          nAbsImposeStart, nAbsImposeEnd, q, \[Sigma]w,
+          numCellsX, numCellsY, nodesExactPositions, elementaryCellXYTable,
+          fullSpaceXYTable]] &, BZ, {2}(*,
       DistributedContexts -> All*)];
 
 FxyTRetrSupportTable =

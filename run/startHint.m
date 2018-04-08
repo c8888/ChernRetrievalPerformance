@@ -19,15 +19,15 @@ numCellsX = 2;
 numCellsY = 2;
 q = 3;
 gx = 2; gy = 2;
-dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)* gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
+dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)*gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
 "2^N" *)
 \[Sigma]w = 0.2;
-rangeRectangleSizeX = 3;
-rangeRectangleSizeY = 3;
+rangeRectangleSizeX = 1.5;
+rangeRectangleSizeY = 1.5;
 a = 1;
 J = 1;
 J1 = 3;
-nIterations = 200;
+nIterations = 50;
 nRepeats = 1;
 nHIO = 20;
 gamma = 0.9;
@@ -36,6 +36,7 @@ nx1 = 3;
 ny1 = 1;
 numTheta = 15; (* how many points are taken as a starting guess *)
 numPhi = 15;
+nIterationsOverlapCalc = 5;
 
 (**************************************************************)
 protocolBar[];
@@ -137,28 +138,35 @@ FTAbswf = Abs@Fourier@wf;
 ckModel = wannierProject[wf, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x, \[Delta]y];
 
 startHintTable = ParallelTable[
+  startHint = fastFullSpaceWfQRSpace[nx1 gx \[Delta]kx, ny1 gy \[Delta]ky,
+    N@CoordinateTransformData["Spherical" -> "Cartesian",
+      "Mapping", {1, \[Theta], \[Phi]}], \[Sigma]w, numCellsX, numCellsY,
+    nodesExactPositions, elementaryCellXYTable,
+    fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx,
+    dimy];
   {
     \[Theta],
     \[Phi],
-    Max[{overlapWannier[ckModel, wannierProject[#, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x,
+    Max[{overlapWannier[ckModel, wannierProject[#[[1]], nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x,
       \[Delta]y]],
-    overlapWannier[ckModel,  wannierProject[mirrorXY[#], nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x,
+    overlapWannier[ckModel,  wannierProject[mirrorXY[#[[1]]], nodesNeighbourhoods, wannierRectangleTableValues,
+      \[Delta]x,
     \[Delta]y]]}],
-    Total@Total@Abs[Abs[Fourier[#]]^2-Abs[FTAbswf]^2],
-    overlapArray[Abs[Fourier[#]]^2, FTAbswf^2, \[Delta]kx, \[Delta]ky]
+    Total@Total@Abs[Abs[Fourier[#[[1]]]]^2-Abs[FTAbswf]^2],
+    overlapArray[Abs[Fourier[#[[1]]]]^2, FTAbswf^2, \[Delta]kx, \[Delta]ky],
+    #[[2]]
 }&
   [
     phaseRetrieveSupportStartHint[Abs@Fourier@wf,
-    fastFullSpaceWfQRSpace[nx1 gx \[Delta]kx, ny1 gy \[Delta]ky,
-      N@CoordinateTransformData["Spherical" -> "Cartesian",
-        "Mapping", {1, \[Theta], \[Phi]}], \[Sigma]w, numCellsX, numCellsY,
-      nodesExactPositions, elementaryCellXYTable,
-      fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx,
-      dimy], support,
-    nIterations, nRepeats, nHIO, gamma]
+    startHint, support,
+    nIterations, nRepeats, nHIO, gamma, nIterationsOverlapCalc, wannierProject[Abs[startHint], nodesNeighbourhoods,
+      wannierRectangleTableValues, \[Delta]x,
+      \[Delta]y], nodesNeighbourhoods,
+      wannierRectangleTableValues, \[Delta]x,
+      \[Delta]y]
   ]
 ,
-  {\[Theta], 0.01, Pi-0.01, 1.Pi/numTheta}, {\[Phi], -Pi+0.01, Pi-0.01, 2.Pi/numPhi},
+  {\[Theta], 0.01, Pi/2, Pi/2./numTheta}, {\[Phi], 0, Pi/2, Pi/2/numPhi},
   DistributedContexts -> All
 ]
 

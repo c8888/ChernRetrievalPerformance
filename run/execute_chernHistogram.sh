@@ -2,9 +2,9 @@
 
 #PBS -N nyx
 
-#PBS -q long
+#PBS -q normal
 
-#PBS -l cput=72:00:00
+#PBS -l cput=12:00:00
 
 #PBS -m abe
 
