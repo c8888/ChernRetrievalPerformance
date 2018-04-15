@@ -16,28 +16,28 @@ t1 = DateList[];
 protocolAdd[ToString[t1] <> " Program started."];
 (**************************************************************)
 
-numCellsX = 2;
-numCellsY = 2;
+numCellsX = 17;
+numCellsY = 17;
 q = 3;
 gx = 2; gy = 2;
 dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)* gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
 "2^N" *)
 \[Sigma]w = 0.155;
-rangeRectangleSizeX = 1.5;
-rangeRectangleSizeY = 1.5;
+rangeRectangleSizeX = 1.;
+rangeRectangleSizeY = 1.;
 a = 1;
 J = 1;
-J1 = 3;
-nIterations = 500;
+J1 = 2;
+nIterations = 350;
 nRepeats = 1;
 nHIO = 20;
 gamma = 0.9;
 npts = 9;(*points in the 1st Brillouin zone*)
 n = 1; (* band number 1...q *)
 nSets = 6; (* Number of separate phase retrievals. Each phase retrieval gives a single chern number. *)
-nEREnd = 100;
+nEREnd = 200;
 nAbsImpose = 3;
-nAbsImposeStart = 0;
+nAbsImposeStart = 1;
 nAbsImposeEnd = nIterations;
 
 (**************************************************************)
@@ -109,12 +109,13 @@ support =
         2}}];
 
 (*---Dot products---*)
-fullSpaceNodes =
+fullSpaceNodesCellsSpace =
     fullSpace2DNodes[elCellNodes, elementaryCellXYTable, numCellsX,
       numCellsY];
+nodesXYTable = nodesXY[fullSpaceXYTable, fullSpaceNodesCellsSpace];
 fullSpaceNodes =
     nodesTranslateAfterDimensionalizing[
-      fullSpaceNodes, {cellsSpaceX, cellsSpaceY}, {dimx, dimy}];
+      fullSpaceNodesCellsSpace, {cellsSpaceX, cellsSpaceY}, {dimx, dimy}];
 nodesNeighbourhoods =
     nodesNeighbourhood[fullSpaceNodes, \[Delta]x, \[Delta]y,
       rangeRectangleSizeX, rangeRectangleSizeY, {dimx, dimy}];
@@ -161,7 +162,7 @@ ckRetrSupportTable =
           fullSpaceXYTable]] &, BZ, {2}(*,
       DistributedContexts -> All*)];
 
-FxyTRetrSupportTable =
+(*FxyTRetrSupportTable =
     Table[FxyT[ckRetrSupportTable[[All, All, i, 1, All]]], {i, 1,
       Dimensions[ckRetrSupportTable][[3]]}];
 
@@ -169,6 +170,7 @@ wRetrSupportTable =
     1/(2 Pi I)*
         Table[Chop@Total@Total[FxyTRetrSupportTable[[i]]], {i, 1,
           Dimensions[ckRetrSupportTable][[3]]}];
+          *)
 
 (**************************************************************)
 (* SAVE DATA *)
@@ -178,15 +180,17 @@ Export["../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <>
 protocolAdd["File saved to ../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <>
     "ckRetrSupportTable.mx"];
 
-Export["../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "FxyTRetrSupportTable.mx",
+(*Export["../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "FxyTRetrSupportTable.mx",
   FxyTRetrSupportTable];
 protocolAdd["File saved to ../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "FxyTRetrSupportTable.mx"];
+*)
 
-Export["../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "wRetrSupportTable.mx",
+(*Export["../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "wRetrSupportTable.mx",
   wRetrSupportTable];
 protocolAdd["File saved to ../out/" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "wRetrSupportTable.mx"];
+*)
 
-protocolAdd["wRetrSupportTable = " <> ToString[wRetrSupportTable]];
+(* protocolAdd["wRetrSupportTable = " <> ToString[wRetrSupportTable]];*)
 protocolBar[];
 
 t2 = DateList[];

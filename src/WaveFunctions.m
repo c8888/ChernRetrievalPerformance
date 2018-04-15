@@ -48,9 +48,17 @@ wannierRectangleTable::usage =
     returns table of wannier function values in the neighbourhood of every node to significantly speed up
     calculations of overlap."
 
+blochNodePhaseConjugateTable::usage =
+    "blochNodePhaseTable[k0x_, k0y_, nodesXYTable_] :=
+    Exp[I {k0x, k0y}.#] & /@ nodesXYTable returns values of conjugate bloch phases at nodes positions"
+
 wannierProject::usage =
     "wannierProject[array2D_, nodesNeighbourhood_, wannierRectangleTableValues_, \[Delta]x_, \[Delta]y_] returns a wave function
     vector in wannier function basis"
+
+kProject::usage =
+    "kProject[ckWannier_, blochNodePhaseTable_, q_] takes table from wannierProject and cancels out the phase
+    resulting from bloch wave."
 
 overlapWannier::usage =
     "overlapWannier[ck1_, ck2_] returns Abs[complexDotProduct[ck1, ck2]]^2"
@@ -191,6 +199,15 @@ wannierRectangleTable[fullSpace2DNodes_, nodesNeighbourhood_, wannierNormalisati
 wannierProject[array2D_, nodesNeighbourhood_, wannierRectangleTableValues_, \[Delta]x_, \[Delta]y_] :=
     Return@(Map[Total@Total[wannierRectangleTableValues * array2D[[ #[[1, 1]] ;; #[[2, 1]] , #[[1, 2]] ;; #[[2, 2]] ]]]&,
       nodesNeighbourhood, {1}] * \[Delta]x * \[Delta]y)
+
+blochNodePhaseConjugateTable[k0x_, k0y_, nodesXYTable_] :=
+    Exp[I {k0x, k0y}.#] & /@ nodesXYTable
+
+kProject[ckWannier_, blochNodePhaseConjugateTable_, q_] := (*requires so that the nodes are in good order in the nodes
+    list.*)
+    Normalize[
+      Table[Mean[#[[1 + i*Length[#]/q ;; (i + 1)*Length[#]/q]]], {i, 0,
+        q - 1}] &[ckWannier*blochNodePhaseConjugateTable]]
 
 overlapWannier[ck1_, ck2_] :=
     Abs[complexDotProduct[ck1, ck2]]^2

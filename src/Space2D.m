@@ -50,6 +50,11 @@ fullSpace2DNodes::usage =
       and elementaryCellXYTable and number of cells in x and y direction and returns positions along with distances from real node in table WITHOUT support;
       nodesTranslateAfterDimensionalizing[fullSpace2DNodes_, oldDims_, newDims_] should be used after adding support."
 
+nodesXY::usage =
+    "nodesXY[fullSpaceXYTable_, fullSpaceNodesCellsSpace_] takes fullSpaceXYTable and nodes positions and returns a
+    list of nodes (x,y) positions. The list is ordered so that 1;;Length[]/q are A nodes, Length[]/q+1;;2Length[]/q
+    are B nodes and so on."
+
 nodesTranslateAfterDimensionalizing::usage =
     "nodesTranslateAfterDimensionalizing[fullSpace2DNodes_, oldDims_, newDims_] translates nodes when support is added to match new table.
      CenterArray documentation tells that 'If the amount of padding is an odd number, additional padding is placed on the right', so in implementation we use Floor"
@@ -144,6 +149,10 @@ fullSpace2DNodes[elementaryCell2DNodes_, elementaryCellXYTable_, numCellsX_, num
           2 numCellsX }, {m, 0, 2 numCellsY}], 1] &,
         elementaryCell2DNodes, {1}], 1];
     ]
+
+nodesXY[fullSpaceXYTable_, fullSpaceNodesCellsSpace_] :=
+    Map[fullSpaceXYTable[[#[[1, 1]], #[[1, 2]]]] &,
+      fullSpaceNodesCellsSpace, {1}]
 
 nodesTranslateAfterDimensionalizing[fullSpace2DNodes_, oldDims_, newDims_]:=
     Module[
