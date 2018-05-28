@@ -85,6 +85,9 @@ hamiltonianHarperQ::usage =
 myES::usage =
     "myES[hamiltonian_] returns an eigensystem of the hamiltonian matrix sorted by energy."
 
+addNoise::usage =
+    "addNoise[wfKSpaceAbsSq_, SNR_, FBZnColnRow_] returns noised square of magnitude. signal is mean over FBZ."
+
 (* ---- Wave functions of specific models ---- *)
 
 blochWave::usage =
@@ -241,6 +244,21 @@ myES[hamiltonian_] :=
             Sort[Transpose[Eigensystem[hamiltonian]], #1[[1]] < #2[[1]] &]},
       es[[2]] = Map[Exp[-I Arg[#[[1]]]]*# &, es[[2]]]; Return[es] (*es[[2,
   i,1]] is always real*)]
+
+addNoise[wfKSpaceAbsSq_, SNR_, FBZnColnRow_] := Module[
+  {
+    measuredSq = mirror2DSpace[wfKSpaceAbsSq],
+    A, \[Sigma]n
+  },
+  A = Mean[
+    Flatten[measuredSq[[FBZnColnRow[[1, 1]] ;; FBZnColnRow[[1, 2]],
+        FBZnColnRow[[2, 1]] ;;
+            FBZnColnRow[[2, 2]] ]]]];(*signal strength*)
+  \[Sigma]n = A/SNR;
+  Return[wfKSpaceAbsSq +
+      RandomReal[{0, \[Sigma]n}, {Dimensions[wfKSpaceAbsSq][[1]],
+        Dimensions[wfKSpaceAbsSq][[2]]}]]
+]
 
 (* ---- Wave functions of specific models ---- *)
 

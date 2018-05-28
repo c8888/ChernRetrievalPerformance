@@ -33,7 +33,7 @@ findCkRetrSupportAbsImposeQ::usage =
   nEREnd_, nAbsImpose_,
   nAbsImposeStart_, nAbsImposeEnd_, q_, \[Sigma]w_,
   numCellsX_, numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, ckSupportMemberTable_] returns a table of model wave function in wannier basis
+  fullSpaceXYTable_, ckSupportMemberTable_,  SNR_, FBZnColnRow_] returns a table of model wave function in wannier basis
   for given Harper model parameters"
 
 Begin["`Private`"]
@@ -85,23 +85,24 @@ findCkRetrSupportAbsImposeQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
   nEREnd_, nAbsImpose_,
   nAbsImposeStart_, nAbsImposeEnd_, q_, \[Sigma]w_,
   numCellsX_, numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, ckSupportMemberTable_] :=
+  fullSpaceXYTable_, ckSupportMemberTable_, SNR_, FBZnColnRow_] :=
     Module[{
       ckRetr,
       ckRetrMirror,
       retr,
       overlapRetr,
       overlapRetrMirror,
-      distKSpace
+      distKSpace,
+      measuredAbsSq = addNoise[Abs[Fourier[wfQRSpaceFullSpace]]^2, SNR, FBZnColnRow]
     },
       Return@Table[
-        retr = phaseRetrieveSupportAbsImpose[Abs@Fourier[wfQRSpaceFullSpace], support, nIterations, nRepeats, nHIO, gamma, nEREnd, nAbsImpose,
+        retr = phaseRetrieveSupportAbsImpose[Sqrt[measuredAbsSq], support, nIterations, nRepeats, nHIO, gamma, nEREnd,
+          nAbsImpose,
           nAbsImposeStart, nAbsImposeEnd, nodesNeighbourhoods,
           wannierRectangleTableValues, \[Delta]x, \[Delta]y, q, \[Sigma]w,
           numCellsX, numCellsY, nodesExactPositions, elementaryCellXYTable,
           fullSpaceXYTable, ckSupportMemberTable];
-        distKSpace = 1/Total[Total[Abs[Fourier[wfQRSpaceFullSpace]]^2]]*(Total@Total[Abs[Abs[Fourier
-        [wfQRSpaceFullSpace]]-Abs[Fourier[retr]]]]);
+        distKSpace = 1/Total[Total[measuredAbsSq]]*(Total@Total[Abs[Sqrt[measuredAbsSq]-Abs[Fourier[retr]]]]);
 
         ckRetr = wannierProject[retr, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x, \[Delta]y];
         overlapRetr = Abs[ckRetr.Conjugate[ckModel]]^2/Abs[ckModel.Conjugate[ckModel]]^2;

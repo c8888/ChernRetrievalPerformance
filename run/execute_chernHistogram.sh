@@ -9,4 +9,4 @@
 #PBS -m abe
 
 cd $HOME/ChernRetrievalPerformance/run/
-woflramscript -file chernHistogram.m
+math -script chernHistogram.m

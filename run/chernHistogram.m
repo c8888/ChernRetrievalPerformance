@@ -15,31 +15,30 @@ SetSystemOptions["ParallelOptions" -> "MKLThreadNumber" -> 1];
 (**************************************************************)
 (*DEFAULT PARAMETERS VALUES*)
 
-numCellsX = 10;
-numCellsY = 10;
+numCellsX = 1;
+numCellsY = 1;
 q = 3;
 gx = 2; gy = 2;
-dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)* gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
-"2^N" *)
 \[Sigma]w = 0.155;
 rangeRectangleSizeX = 1.;
 rangeRectangleSizeY = 1.;
 a = 1;
 J = 1;
 J1 = 2;
-nIterations = 500;
+nIterations = 5;
 nRepeats = 1;
 nHIO = 20;
 gamma = 0.9;
-npts = 7;(*points in the 1st Brillouin zone*)
+npts = 3;(*points in the 1st Brillouin zone*)
 n = 1; (* band number 1...q *)
-nSets = 5; (* Number of separate phase retrievals. Each phase retrieval gives a single chern number. *)
+nSets = 2; (* Number of separate phase retrievals. Each phase retrieval gives a single chern number. *)
 nEREnd = 30;
 nAbsImpose = 3;
 nAbsImposeStart = 1;
-nAbsImposeEnd = nIterations;
+
 trapezeRatio = 0.8;
 folder = "default";
+SNR = 10000000000000000;
 (**************************************************************)
 
 ToExpression[$CommandLine[[4;;-1]]]; (*Execute parameter overriding from command line. HAS TO BE RUN WITH
@@ -90,8 +89,10 @@ protocolBar[];
 
 (**************************************************************)
 (* INITIALISATION *)
-
+nAbsImposeEnd = nIterations;
 (*---SPACE---*)
+dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)* gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
+"2^N" *)
 {ax, ay} = {q a, a};
 {dimBZx, dimBZy} = {(2 numCellsX + 1) gx, (2 numCellsY + 1) gy}; (*in PIXELS *)
 {\[Delta]kx, \[Delta]ky} = {2 Pi/ax/gx/(2 numCellsX + 1), 2 Pi/ay/gy/(2 numCellsY + 1)}; (* in 1/[a] dimensions *)
@@ -139,6 +140,14 @@ wannierRectangleTableValues =
 {support, ckSupportMemberTable} =
     trapezeSupport[trapezeRatio, cellsRangeX, cellsRangeY, cellsSpaceX,
       cellsSpaceY, fullSpaceNodes, dimx, dimy];
+
+(**************************************************************)
+(* NOISE *)
+FBZnColnRow = {Round[{dimx/2 - dimBZx/2, dimx/2 + dimBZx/2 + 1}],
+  Round[{dimy/2 - dimBZy/2, dimy/2 + dimBZy/2 + 1}]};
+
+
+
 (**************************************************************)
 (* PHASE RETRIEVAL *)
 protocolAdd["$ProcessorCount = "<> ToString[$ProcessorCount]];
@@ -172,7 +181,7 @@ ckRetrSupportTable =
           nIterations, nRepeats, nHIO, gamma, nSets, nEREnd, nAbsImpose,
           nAbsImposeStart, nAbsImposeEnd, q, \[Sigma]w,
           numCellsX, numCellsY, nodesExactPositions, elementaryCellXYTable,
-          fullSpaceXYTable, ckSupportMemberTable]] &, BZ, {2}(*,
+          fullSpaceXYTable, ckSupportMemberTable, SNR, FBZnColnRow]] &, BZ, {2}(*,
       DistributedContexts -> All*)];
 
 blochNodePhaseConjugateTableBZ =
