@@ -25,7 +25,8 @@ iterations not to stay in local minima."
 phaseRetrieveSupportAbsImpose::usage =
     "phaseRetrieveSupportAbsImpose[FTXAbs_, support_, nIterations_, nRepeats_, nHIO_, gamma_, nEREnd_, nAbsImpose_,
   nAbsImposeStart_, nAbsImposeEnd_, nodesNeighbourhoods_, wannierRectangleTableValues_, \[Delta]x_, \[Delta]y_, q_,
-  \[Sigma]w_, numCellsX_,  numCellsY_, nodesExactPositions_, elementaryCellXYTable_, fullSpaceXYTable_] imposes
+  \[Sigma]w_, numCellsX_,  numCellsY_, nodesExactPositions_, elementaryCellXYTable_, fullSpaceXYTable_,
+  ckSupportMemberTable_] imposes
   condition that wannier heights should be equal in the whole lattice. Also inputs the information about the symmetry
   of the lattice."
 phaseRetrieveGuess::usage =
@@ -134,7 +135,8 @@ phaseRetrieveSupport[FTXAbs_, support_, nIterations_, nRepeats_, nHIO_, gamma_]:
 
 phaseRetrieveSupportAbsImpose[FTXAbs_, support_, nIterations_, nRepeats_, nHIO_, gamma_, nEREnd_, nAbsImpose_,
   nAbsImposeStart_, nAbsImposeEnd_, nodesNeighbourhoods_, wannierRectangleTableValues_, \[Delta]x_, \[Delta]y_, q_,
-  \[Sigma]w_, numCellsX_,  numCellsY_, nodesExactPositions_, elementaryCellXYTable_, fullSpaceXYTable_]:= (*
+  \[Sigma]w_, numCellsX_,  numCellsY_, nodesExactPositions_, elementaryCellXYTable_, fullSpaceXYTable_,
+  ckSupportMemberTable_]:= (*
     returns
     table of a
     retrieved object *)
@@ -174,9 +176,9 @@ phaseRetrieveSupportAbsImpose[FTXAbs_, support_, nIterations_, nRepeats_, nHIO_,
                   meanCkAbs[
                     wannierProject[xi, nodesNeighbourhoods,
                       wannierRectangleTableValues, \[Delta]x, \[Delta]y],
-                    q], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
+                    q, ckSupportMemberTable], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
                   elementaryCellXYTable,
-                  fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy]
+                  fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support]
           ];,
           {i, nIterations}
         ];

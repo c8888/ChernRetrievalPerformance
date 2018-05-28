@@ -15,16 +15,28 @@
 BeginPackage["Protocoling`"]
 (* Exported symbols added here with SymbolName::usage *)
 
+protocolSetDir::usage =
+    "set protocol directory"
+protocolSetExtraArg::usage =
+    "set extra arguments from command line"
 protocolAdd::usage =
-    "protocolAdd[stringMessage] adds stringMessage at the end of protocol file"
+    "protocolAdd[stringMessage, dir] adds stringMessage at the end of protocol file"
 protocolMaxMemoryUsed::usage =
     "protocolMaxMemoryUsed[] adds information about max memory used (in GB) in current kernel session"
 protocolBar::usage =
     "adds a horizontal bar to the protocol"
 
 Begin["`Private`"]
+dirLocal = "default";
+extraArgLocal = ""
 
-protocolAdd[stringMessage_]:=PutAppend[stringMessage, "../out/" <> ToString[Last@$CommandLine] <> "_"  <>
+protocolSetDir[dir_]:= Module[{}, dirLocal = ToString[dir]];
+protocolSetExtraArg[extraArg_]:= Module[{}, extraArgLocal = ToString[extraArg]];
+
+protocolAdd[stringMessage_]:=PutAppend[stringMessage, dirLocal <> "/" <> ToString[extraArgLocal] <>"_" <>
+    ToString[Last@$CommandLine]
+    <> "_"
+    <>
     ToString[$ProcessID] <> "protocol.txt"]
 protocolMaxMemoryUsed[]:=protocolAdd["Max memory used (GB): " <> ToString[MaxMemoryUsed[]/1024.^3]]
 protocolBar[]:=Module[{}, protocolAdd[" "]; protocolAdd["*************************************************"]; protocolAdd[" "];]

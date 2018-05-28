@@ -57,7 +57,7 @@ wannierProject::usage =
     vector in wannier function basis"
 
 kProject::usage =
-    "kProject[ckWannier_, blochNodePhaseTable_, q_] takes table from wannierProject and cancels out the phase
+    "kProject[ckWannier_, blochNodePhaseConjugateTable_, q_, ckSupportMemberTable_] takes table from wannierProject and cancels out the phase
     resulting from bloch wave."
 
 overlapWannier::usage =
@@ -114,13 +114,15 @@ waveFunctionQ::usage =
 fastFullSpaceWfQRSpace::usage =
     "fastFullSpaceWfQRSpace[k0x_, k0y_, stateVectorQ_, \[Sigma]w_, numCellsX_,
   numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_] return full space table generated from bloch wave and wave
+  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_] return full space table generated from bloch wave
+  and wave
    function in elementary cell."
 fastFullSpaceWfQRSpaceAbs::usage =
     "fastFullSpaceWfQRSpaceAbs[stateVectorQ_, \[Sigma]w_, numCellsX_,
   numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_] works identical to fastFullSpaceWfQRSpace except it
-  returns only the absolute value. Because of that it is faster since no bloch wave has to be constructed."
+  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_] works identical to fastFullSpaceWfQRSpace except it
+  returns only the absolute value. Because of that it is faster since no bloch wave has to be constructed. Gives wf
+  not normalized properly if the support is not rectangular."
 
 Begin["`Private`"]
 
@@ -203,11 +205,15 @@ wannierProject[array2D_, nodesNeighbourhood_, wannierRectangleTableValues_, \[De
 blochNodePhaseConjugateTable[k0x_, k0y_, nodesXYTable_] :=
     Exp[I {k0x, k0y}.#] & /@ nodesXYTable
 
-kProject[ckWannier_, blochNodePhaseConjugateTable_, q_] := (*requires so that the nodes are in good order in the nodes
+kProject[ckWannier_, blochNodePhaseConjugateTable_, q_, ckSupportMemberTable_] := (*requires so that the nodes are in
+    good order in the nodes
     list.*)
-    Normalize[
-      Table[Mean[#[[1 + i*Length[#]/q ;; (i + 1)*Length[#]/q]]], {i, 0,
-        q - 1}] &[ckWannier*blochNodePhaseConjugateTable]]
+    Normalize@Table[
+      Total[(ckWannier*blochNodePhaseConjugateTable*ckSupportMemberTable)[[
+          1 + i*Length[ckWannier]/q ;; (i + 1)*Length[ckWannier]/q]]]/
+          Total[ckSupportMemberTable[[
+              1 + i*Length[ckWannier]/q ;; (i + 1)*Length[ckWannier]/q]]], {i, 0,
+        q - 1}]
 
 overlapWannier[ck1_, ck2_] :=
     Abs[complexDotProduct[ck1, ck2]]^2
@@ -316,7 +322,7 @@ waveFunctionQ[elementaryCellXYTable_, k0x_, k0y_, \[Sigma]w_,
 
 fastFullSpaceWfQRSpace[k0x_, k0y_, stateVectorQ_, \[Sigma]w_, numCellsX_,
   numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_] :=
+  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_] :=
     Module[{
       wfQRSpaceElCell,
       wfQRSpaceFullSpace,
@@ -327,7 +333,7 @@ fastFullSpaceWfQRSpace[k0x_, k0y_, stateVectorQ_, \[Sigma]w_, numCellsX_,
             stateVectorQ, nodesExactPositions];
       norm = Sqrt[Total@Total[Abs[wfQRSpaceElCell]^2] \[Delta]x \[Delta]y];
       Return[
-          CenterArray[
+          support*CenterArray[
             1/(norm*Sqrt[(2 numCellsX + 1) (2 numCellsY + 1)]) (*blochWave[
               fullSpaceXYTable, {k0x, k0y}]*)connectBlochPhase2DElementaryCells[k0x, k0y, numCellsX,
               numCellsY, elementaryCellXYTable, Length@stateVectorQ*1, 1]*
@@ -338,7 +344,7 @@ fastFullSpaceWfQRSpace[k0x_, k0y_, stateVectorQ_, \[Sigma]w_, numCellsX_,
 
 fastFullSpaceWfQRSpaceAbs[stateVectorQ_, \[Sigma]w_, numCellsX_,
   numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_] :=
+  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_] :=
     Module[{
       wfQRSpaceElCell,
       norm
@@ -348,7 +354,7 @@ fastFullSpaceWfQRSpaceAbs[stateVectorQ_, \[Sigma]w_, numCellsX_,
             stateVectorQ, nodesExactPositions];
       norm = Sqrt[Total@Total[Abs[wfQRSpaceElCell]^2] \[Delta]x \[Delta]y];
       Return[
-        CenterArray[
+        support*CenterArray[
           1/(norm*Sqrt[(2 numCellsX + 1) (2 numCellsY + 1)])*connect2DElementaryCells[numCellsX, numCellsY,
                 wfQRSpaceElCell], {dimx, dimy}]
       ]
