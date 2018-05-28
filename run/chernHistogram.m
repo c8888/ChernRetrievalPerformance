@@ -35,14 +35,18 @@ nSets = 2; (* Number of separate phase retrievals. Each phase retrieval gives a 
 nEREnd = 30;
 nAbsImpose = 3;
 nAbsImposeStart = 1;
-
 trapezeRatio = 0.8;
 folder = "default";
 SNR = 10000000000000000;
+SigmaSigmaPeak = 0;
 (**************************************************************)
 
 ToExpression[$CommandLine[[4;;-1]]]; (*Execute parameter overriding from command line. HAS TO BE RUN WITH
 WOLFRAMSCRIPT: wolframscript -file chernHistogram.m npts=8*)
+dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)* gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
+"2^N" *)
+nAbsImposeEnd = nIterations;
+
 extraArg = StringJoin@Map[ToString[#]&, $CommandLine[[4;;-1]]];
 If[folder=="default", folder=extraArg];
 
@@ -54,6 +58,7 @@ protocolSetExtraArg[extraArg];
 t1 = DateList[];
 protocolAdd[ToString[t1] <> " Program started."];
 (**************************************************************)
+
 protocolBar[];
 protocolAdd["Parameters: "];
 protocolAdd["numCellsX = "<> ToString[numCellsX] ];
@@ -83,16 +88,14 @@ protocolAdd["nAbsImpose = "<> ToString[nAbsImpose] ];
 protocolAdd["nAbsImposeStart = "<> ToString[nAbsImposeStart] ];
 protocolAdd["nAbsImposeEnd = "<> ToString[nAbsImposeEnd] ];
 protocolAdd["trapezeRatio = "<> ToString[trapezeRatio] ];
-
-
-protocolBar[];
+protocolAdd["SNR = "<> ToString[SNR] ];
+protocolAdd["SigmaSigmaPeak = "<> ToString[SigmaSigmaPeak] ];
 
 (**************************************************************)
 (* INITIALISATION *)
-nAbsImposeEnd = nIterations;
+
 (*---SPACE---*)
-dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)* gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
-"2^N" *)
+
 {ax, ay} = {q a, a};
 {dimBZx, dimBZy} = {(2 numCellsX + 1) gx, (2 numCellsY + 1) gy}; (*in PIXELS *)
 {\[Delta]kx, \[Delta]ky} = {2 Pi/ax/gx/(2 numCellsX + 1), 2 Pi/ay/gy/(2 numCellsY + 1)}; (* in 1/[a] dimensions *)
@@ -146,8 +149,20 @@ wannierRectangleTableValues =
 FBZnColnRow = {Round[{dimx/2 - dimBZx/2, dimx/2 + dimBZx/2 + 1}],
   Round[{dimy/2 - dimBZy/2, dimy/2 + dimBZy/2 + 1}]};
 
+(* RESOLUTION *)
+(* example wf to compute sigmaPeak *)
+wf = fastFullSpaceWfQRSpace[0, 0,
+      myES[hamiltonianHarperQ[0, 0, J, J1, q]][[2,
+          n]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
+      elementaryCellXYTable,
+      fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support];
+SigmaPeak =
+    Sqrt[Total[findSigmaxyPeak[Abs[Fourier[wf]]^2, dimBZx, dimBZy]^2]];
 
+protocolAdd["SigmaPeak = " <> ToString[SigmaPeak]];
 
+(**************************************************************)
+protocolBar[];
 (**************************************************************)
 (* PHASE RETRIEVAL *)
 protocolAdd["$ProcessorCount = "<> ToString[$ProcessorCount]];
@@ -181,7 +196,8 @@ ckRetrSupportTable =
           nIterations, nRepeats, nHIO, gamma, nSets, nEREnd, nAbsImpose,
           nAbsImposeStart, nAbsImposeEnd, q, \[Sigma]w,
           numCellsX, numCellsY, nodesExactPositions, elementaryCellXYTable,
-          fullSpaceXYTable, ckSupportMemberTable, SNR, FBZnColnRow]] &, BZ, {2}(*,
+          fullSpaceXYTable, ckSupportMemberTable, SNR, FBZnColnRow, SigmaSigmaPeak * SigmaPeak]] &,
+      BZ, {2}(*,
       DistributedContexts -> All*)];
 
 blochNodePhaseConjugateTableBZ =

@@ -33,7 +33,8 @@ findCkRetrSupportAbsImposeQ::usage =
   nEREnd_, nAbsImpose_,
   nAbsImposeStart_, nAbsImposeEnd_, q_, \[Sigma]w_,
   numCellsX_, numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, ckSupportMemberTable_,  SNR_, FBZnColnRow_] returns a table of model wave function in wannier basis
+  fullSpaceXYTable_, ckSupportMemberTable_,  SNR_, FBZnColnRow_, \[Sigma]resolution_] returns a table of model wave function in wannier
+  basis
   for given Harper model parameters"
 
 Begin["`Private`"]
@@ -85,7 +86,7 @@ findCkRetrSupportAbsImposeQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
   nEREnd_, nAbsImpose_,
   nAbsImposeStart_, nAbsImposeEnd_, q_, \[Sigma]w_,
   numCellsX_, numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, ckSupportMemberTable_, SNR_, FBZnColnRow_] :=
+  fullSpaceXYTable_, ckSupportMemberTable_, SNR_, FBZnColnRow_, \[Sigma]resolution_] :=
     Module[{
       ckRetr,
       ckRetrMirror,
@@ -93,7 +94,8 @@ findCkRetrSupportAbsImposeQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
       overlapRetr,
       overlapRetrMirror,
       distKSpace,
-      measuredAbsSq = addNoise[Abs[Fourier[wfQRSpaceFullSpace]]^2, SNR, FBZnColnRow]
+      measuredAbsSq = GaussianFilter[addNoise[Abs[Fourier[wfQRSpaceFullSpace]]^2, SNR, FBZnColnRow],
+        {If[3 \[Sigma]resolution > 1, 3 \[Sigma]resolution, 1], \[Sigma]resolution}]
     },
       Return@Table[
         retr = phaseRetrieveSupportAbsImpose[Sqrt[measuredAbsSq], support, nIterations, nRepeats, nHIO, gamma, nEREnd,
