@@ -205,16 +205,17 @@ wRetrSupportTable =
 (**************************************************************)
 (* SAVE DATA *)
 
-Export[dir <> "/" <> ToString[extraArg] <>"_" <> ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "ckRetrSupportTable
-.mx",
+Export[dir <> "/" <> ToString[extraArg] <>"_" <> ToString[$CommandLine[[3]]] <> "_" <> ToString[$ProcessID] <>
+    "ckRetrSupportTable.mx",
   ckRetrSupportTable];
-protocolAdd["File saved to " <> dir <> "/" <> ToString[extraArg] <>"_" <>ToString[Last@$CommandLine] <> "_" <>
+protocolAdd["File saved to " <> dir <> "/" <> ToString[extraArg] <>"_" <>ToString[$CommandLine[[3]]] <> "_" <>
     ToString[$ProcessID] <>
     "ckRetrSupportTable.mx"];
 
-Export[dir <> "/" <> ToString[extraArg] <>"_" <>ToString[Last@$CommandLine] <> "_" <> ToString[$ProcessID] <> "kBasisRetrSupportTable.mx",
+Export[dir <> "/" <> ToString[extraArg] <>"_" <>ToString[$CommandLine[[3]]] <> "_" <> ToString[$ProcessID] <>
+    "kBasisRetrSupportTable.mx",
   kBasisRetrSupportTable];
-protocolAdd["File saved to " <> dir <> "/" <> ToString[extraArg] <>"_" <>ToString[Last@$CommandLine] <> "_" <>
+protocolAdd["File saved to " <> dir <> "/" <> ToString[extraArg] <>"_" <>ToString[$CommandLine[[3]]] <> "_" <>
     ToString[$ProcessID] <>
     "kBasisRetrSupportTable.mx"];
 
