@@ -42,9 +42,9 @@ trapezeRatio = 0.8;
 folder = "default";
 (**************************************************************)
 
-ToExpression[$ScriptCommandLine[[2;;-1]]]; (*Execute parameter overriding from command line. HAS TO BE RUN WITH
+ToExpression[$CommandLine[[4;;-1]]]; (*Execute parameter overriding from command line. HAS TO BE RUN WITH
 WOLFRAMSCRIPT: wolframscript -file chernHistogram.m npts=8*)
-extraArg = StringJoin@Map[ToString[#]&, $ScriptCommandLine[[2;;-1]]];
+extraArg = StringJoin@Map[ToString[#]&, $CommandLine[[4;;-1]]];
 If[folder=="default", folder=extraArg];
 
 dir = "../out/" <> ToString[folder];
