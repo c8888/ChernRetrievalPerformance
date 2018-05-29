@@ -94,17 +94,19 @@ findCkRetrSupportAbsImposeQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
       overlapRetr,
       overlapRetrMirror,
       distKSpace,
-      measuredAbsSq = GaussianFilter[addNoise[Abs[Fourier[wfQRSpaceFullSpace]]^2, SNR, FBZnColnRow],
-        {If[3 \[Sigma]resolution > 1, 3 \[Sigma]resolution, 1], \[Sigma]resolution}]
+      measuredAbsSq
     },
       Return@Table[
+        measuredAbsSq = GaussianFilter[addNoise[Abs[Fourier[wfQRSpaceFullSpace]]^2, SNR, FBZnColnRow],
+  {If[3 \[Sigma]resolution > 1, 3 \[Sigma]resolution, 1], \[Sigma]resolution}];
+
         retr = phaseRetrieveSupportAbsImpose[Sqrt[measuredAbsSq], support, nIterations, nRepeats, nHIO, gamma, nEREnd,
           nAbsImpose,
           nAbsImposeStart, nAbsImposeEnd, nodesNeighbourhoods,
           wannierRectangleTableValues, \[Delta]x, \[Delta]y, q, \[Sigma]w,
           numCellsX, numCellsY, nodesExactPositions, elementaryCellXYTable,
           fullSpaceXYTable, ckSupportMemberTable];
-        distKSpace = 1/Total[Total[measuredAbsSq]]*(Total@Total[Abs[Sqrt[measuredAbsSq]-Abs[Fourier[retr]]]]);
+        distKSpace = 1/Total[Total[measuredAbsSq]]*(Total@Total[Abs[Sqrt[measuredAbsSq]-Abs[Fourier[retr]]]^2]);
 
         ckRetr = wannierProject[retr, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x, \[Delta]y];
         overlapRetr = Abs[ckRetr.Conjugate[ckModel]]^2/Abs[ckModel.Conjugate[ckModel]]^2;
