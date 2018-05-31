@@ -34,7 +34,7 @@ protocolSetDir[dir_]:= Module[{}, dirLocal = ToString[dir]];
 protocolSetExtraArg[extraArg_]:= Module[{}, extraArgLocal = ToString[extraArg]];
 
 protocolAdd[stringMessage_]:=PutAppend[stringMessage, dirLocal <> "/" <> ToString[extraArgLocal] <>"_" <>
-    ToString[Last@$CommandLine]
+    ToString[$CommandLine[[3]]]
     <> "_"
     <>
     ToString[$ProcessID] <> "protocol.txt"]

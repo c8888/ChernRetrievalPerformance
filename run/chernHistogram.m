@@ -39,6 +39,7 @@ trapezeRatio = 0.8;
 folder = "default";
 SNR = 10000000000000000;
 SigmaSigmaPeak = 0;
+chi1 = 0; (* n+1 band's relative occupation in Landau Zener transition *)
 (**************************************************************)
 
 ToExpression[$CommandLine[[4;;-1]]]; (*Execute parameter overriding from command line. HAS TO BE RUN WITH
@@ -90,6 +91,7 @@ protocolAdd["nAbsImposeEnd = "<> ToString[nAbsImposeEnd] ];
 protocolAdd["trapezeRatio = "<> ToString[trapezeRatio] ];
 protocolAdd["SNR = "<> ToString[SNR] ];
 protocolAdd["SigmaSigmaPeak = "<> ToString[SigmaSigmaPeak] ];
+protocolAdd["chi1 = "<> ToString[chi1] ];
 
 (**************************************************************)
 (* INITIALISATION *)
@@ -161,6 +163,11 @@ SigmaPeak =
 
 protocolAdd["SigmaPeak = " <> ToString[SigmaPeak]];
 
+
+(* LANDAU - ZENER *)
+mixBands[chi1_, wfnExcited_, wfnGround_] :=
+    1/Sqrt[Abs[chi1]^2 + 1]*(chi1*wfnExcited + wfnGround)
+
 (**************************************************************)
 protocolBar[];
 (**************************************************************)
@@ -184,11 +191,24 @@ ckRetrSupportTable =
         nIterations, nRepeats, nHIO, gamma, nSets]*)
         protocolAdd["{kx,ky}=" <> ToString[#]];
         findCkRetrSupportAbsImposeQ[(wf =
+            If[chi1!=0,
+              (*mixing*)
+              mixBands[chi1, fastFullSpaceWfQRSpace[#[[1]], #[[2]],
+              myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
+                  n+1]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
+              elementaryCellXYTable,
+              fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support],
+              fastFullSpaceWfQRSpace[#[[1]], #[[2]],
+              myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
+                  n]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
+              elementaryCellXYTable,
+              fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support]],
+              (*not mixing*)
             fastFullSpaceWfQRSpace[#[[1]], #[[2]],
               myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
                   n]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
               elementaryCellXYTable,
-              fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support]),
+              fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support]]),
           wannierProject[wf, nodesNeighbourhoods,
             wannierRectangleTableValues, \[Delta]x, \[Delta]y],
           nodesNeighbourhoods,
