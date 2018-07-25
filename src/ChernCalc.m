@@ -33,7 +33,9 @@ findCkRetrSupportAbsImposeQ::usage =
   nEREnd_, nAbsImpose_,
   nAbsImposeStart_, nAbsImposeEnd_, q_, \[Sigma]w_,
   numCellsX_, numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, ckSupportMemberTable_,  SNR_, FBZnColnRow_, \[Sigma]resolution_] returns a table of model wave function in wannier
+  fullSpaceXYTable_, ckSupportMemberTable_,  SNR_, FBZnColnRow_, \[Sigma]resolution_,ax_, ay_] returns a table of model
+  wave
+  function in wannier
   basis
   for given Harper model parameters"
 
@@ -86,7 +88,7 @@ findCkRetrSupportAbsImposeQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
   nEREnd_, nAbsImpose_,
   nAbsImposeStart_, nAbsImposeEnd_, q_, \[Sigma]w_,
   numCellsX_, numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, ckSupportMemberTable_, SNR_, FBZnColnRow_, \[Sigma]resolution_] :=
+  fullSpaceXYTable_, ckSupportMemberTable_, SNR_, FBZnColnRow_, \[Sigma]resolution_, ax_, ay_] :=
     Module[{
       ckRetr,
       ckRetrMirror,
@@ -105,7 +107,7 @@ findCkRetrSupportAbsImposeQ[wfQRSpaceFullSpace_, ckModel_, nodesNeighbourhoods_,
           nAbsImposeStart, nAbsImposeEnd, nodesNeighbourhoods,
           wannierRectangleTableValues, \[Delta]x, \[Delta]y, q, \[Sigma]w,
           numCellsX, numCellsY, nodesExactPositions, elementaryCellXYTable,
-          fullSpaceXYTable, ckSupportMemberTable];
+          fullSpaceXYTable, ckSupportMemberTable, ax, ay];
         distKSpace = 1/Total[Total[measuredAbsSq]]*(Total@Total[Abs[Sqrt[measuredAbsSq]-Abs[Fourier[retr]]]^2]);
 
         ckRetr = wannierProject[retr, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x, \[Delta]y];

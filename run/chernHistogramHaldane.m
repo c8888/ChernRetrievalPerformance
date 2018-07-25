@@ -17,14 +17,14 @@ SetSystemOptions["ParallelOptions" -> "MKLThreadNumber" -> 1];
 
 numCellsX = 1;
 numCellsY = 1;
-q = 3;
+q = 2;
 gx = 2; gy = 2;
 \[Sigma]w = 0.155;
 rangeRectangleSizeX = 1.;
 rangeRectangleSizeY = 1.;
 a = 1;
 J = 1;
-J1 = 2;
+J1 = 1/4;
 nIterations = 5;
 nRepeats = 1;
 nHIO = 20;
@@ -40,11 +40,14 @@ folder = "default";
 SNR = 10000000000000000;
 SigmaSigmaPeak = 0;
 chi1 = 0; (* n+1 band's relative occupation in Landau Zener transition *)
+\[Theta] = 1;
+\[CapitalDelta] = 0.1;
 (**************************************************************)
 
 ToExpression[$CommandLine[[4;;-1]]]; (*Execute parameter overriding from command line. HAS TO BE RUN WITH
 WOLFRAMSCRIPT: wolframscript -file chernHistogram.m npts=8*)
-dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)* gy*10; (* dimx, dimy must be even numbers for fast FFT, at best \
+dimx = (2 numCellsX + 1)*gx*q*10; dimy = (2*numCellsY + 1)* gy*q*10; (* dimx, dimy must be even numbers for fast FFT,
+at best \
 "2^N" *)
 nAbsImposeEnd = nIterations;
 
@@ -92,20 +95,21 @@ protocolAdd["trapezeRatio = "<> ToString[trapezeRatio] ];
 protocolAdd["SNR = "<> ToString[SNR] ];
 protocolAdd["SigmaSigmaPeak = "<> ToString[SigmaSigmaPeak] ];
 protocolAdd["chi1 = "<> ToString[chi1] ];
-
+protocolAdd["\[Theta] = "<> ToString[\[Theta]] ];
+protocolAdd["\[CapitalDelta] = "<> ToString[\[CapitalDelta]]];
 (**************************************************************)
 (* INITIALISATION *)
 
 (*---SPACE---*)
 
-{ax, ay} = {q a, a};
+{ax, ay} = {q a, q a};
 {dimBZx, dimBZy} = {(2 numCellsX + 1) gx, (2 numCellsY + 1) gy}; (*in PIXELS *)
 {\[Delta]kx, \[Delta]ky} = {2 Pi/ax/gx/(2 numCellsX + 1), 2 Pi/ay/gy/(2 numCellsY + 1)}; (* in 1/[a] dimensions *)
 {\[Delta]x, \[Delta]y} = {2 Pi/(dimx*\[Delta]kx), 2 Pi/(dimy * \[Delta]ky)};
 
 BZ = latticeProbingPointsBZ[npts, a, q];
 
-nodesExactPositions = Table[{-q/2 + 1/2 + i*a, 0}, {i, 0, q - 1, 1}];
+nodesExactPositions = {{-a/2, -a/2}(*A*), {a/2, -a/2}(*B*), {a/2, a/2}(*A*), {-a/2, a/2}(*B*)};
 
 elementaryCellXYTable =
     elementaryCell2D[-ax/2, ax/2, -ay/2, ay/2, \[Delta]x, \[Delta]y];
@@ -149,13 +153,13 @@ wannierRectangleTableValues =
 (**************************************************************)
 (* NOISE *)
 FBZnColnRow = {Round[{dimx/2 - dimBZx/2, dimx/2 + dimBZx/2 + 1}],
-  Round[{dimy/2 - dimBZy/2, dimy/2 + dimBZy/2 + 1}]};
+  Round[{dimy/2 - dimBZy/2, dimy/2 + dimBZy/2 + 1}]}; (* for that, rotation of wfKSpace will be needed*)
 
 (* RESOLUTION *)
 (* example wf to compute sigmaPeak *)
 wf = fastFullSpaceWfQRSpace[0, 0,
-      myES[hamiltonianHarperQ[0, 0, J, J1, q]][[2,
-          n]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
+      stateVectorHaldaneABAB[myES[hamiltonianHaldane[0, 0, J, J1, \[Theta], \[CapitalDelta]]][[2,
+          n]]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
       elementaryCellXYTable,
       fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support, ax, ay];
 SigmaPeak =
@@ -194,19 +198,19 @@ ckRetrSupportTable =
             If[chi1!=0,
               (*mixing*)
               mixBands[chi1, fastFullSpaceWfQRSpace[#[[1]], #[[2]],
-              myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
-                  n+1]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
+              stateVectorHaldaneABAB[myES[hamiltonianHaldane[#[[1]], #[[2]], J, J1, \[Theta], \[CapitalDelta]]][[2,
+                  n+1]]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
               elementaryCellXYTable,
               fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support, ax, ay],
               fastFullSpaceWfQRSpace[#[[1]], #[[2]],
-              myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
-                  n]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
+                stateVectorHaldaneABAB[myES[hamiltonianHaldane[#[[1]], #[[2]], J, J1, \[Theta], \[CapitalDelta]]][[2,
+                  n]]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
               elementaryCellXYTable,
               fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support, ax, ay]],
               (*not mixing*)
             fastFullSpaceWfQRSpace[#[[1]], #[[2]],
-              myES[hamiltonianHarperQ[#[[1]], #[[2]], J, J1, q]][[2,
-                  n]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
+              stateVectorHaldaneABAB[myES[hamiltonianHaldane[#[[1]], #[[2]], J, J1, \[Theta], \[CapitalDelta]]][[2,
+                  n]]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
               elementaryCellXYTable,
               fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support, ax, ay]]),
           wannierProject[wf, nodesNeighbourhoods,
@@ -225,7 +229,8 @@ blochNodePhaseConjugateTableBZ =
       BZ, {2}];
 
 kBasisRetrSupportTable = Table[
-  Table[{kProject[ckRetrSupportTable[[i, j, r, 1]], blochNodePhaseConjugateTableBZ[[i, j]], q, ckSupportMemberTable], ckRetrSupportTable[[i, j, r, 2]], ckRetrSupportTable[[i, j, r, 3]]}, {r, 1, Dimensions[ckRetrSupportTable][[3]]}],
+  Table[{stateVactorHaldaneAB[kProject[ckRetrSupportTable[[i, j, r, 1]], blochNodePhaseConjugateTableBZ[[i, j]], 2 q,
+    ckSupportMemberTable]], ckRetrSupportTable[[i, j, r, 2]], ckRetrSupportTable[[i, j, r, 3]]}, {r, 1, Dimensions[ckRetrSupportTable][[3]]}],
   {i, Dimensions[BZ][[1]]}, {j, Dimensions[BZ][[2]]}];
 
 (*FxyTRetrSupportTable =

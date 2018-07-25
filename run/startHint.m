@@ -133,7 +133,7 @@ wf = fastFullSpaceWfQRSpace[#[[1]], #[[2]],
       n]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
   elementaryCellXYTable,
   fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx,
-  dimy, support] &[{nx1 gx \[Delta]kx, ny1 gy \[Delta]ky}];
+  dimy, support, ax, ay] &[{nx1 gx \[Delta]kx, ny1 gy \[Delta]ky}];
 FTAbswf = Abs@Fourier@wf;
 ckModel = wannierProject[wf, nodesNeighbourhoods, wannierRectangleTableValues, \[Delta]x, \[Delta]y];
 
@@ -143,7 +143,7 @@ startHintTable = ParallelTable[
       "Mapping", {1, \[Theta], \[Phi]}], \[Sigma]w, numCellsX, numCellsY,
     nodesExactPositions, elementaryCellXYTable,
     fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx,
-    dimy, support];
+    dimy, support, ax, ay];
   {
     \[Theta],
     \[Phi],

@@ -88,6 +88,18 @@ myES::usage =
 addNoise::usage =
     "addNoise[wfKSpaceAbsSq_, SNR_, FBZnColnRow_] returns noised square of magnitude. signal is mean over FBZ."
 
+hamiltonianHaldane::usage =
+    "hamiltonianHaldane[kx_, ky_, J_,
+  J1_, \[Theta]_, \[CapitalDelta]_] is the Haldane hamiltonian on a brick wall"
+
+
+stateVectorHaldaneABAB::usage =
+    "stateVectorHaldaneABAB[stateVectorHaldaneAB_] :=
+    Normalize@Flatten[{stateVectorHaldaneAB, stateVectorHaldaneAB}] takes AB vector and makes normalized ABAB vector"
+
+stateVectorHaldaneAB::usage =
+    "stateVectorHaldaneAB[stateVectorHaldaneABAB_] takes ABAB vector and returns normalized AB vector"
+
 (* ---- Wave functions of specific models ---- *)
 
 blochWave::usage =
@@ -117,13 +129,15 @@ waveFunctionQ::usage =
 fastFullSpaceWfQRSpace::usage =
     "fastFullSpaceWfQRSpace[k0x_, k0y_, stateVectorQ_, \[Sigma]w_, numCellsX_,
   numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_] return full space table generated from bloch wave
+  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_, ax_, ay_] return full space table generated from
+  bloch wave
   and wave
    function in elementary cell."
 fastFullSpaceWfQRSpaceAbs::usage =
     "fastFullSpaceWfQRSpaceAbs[stateVectorQ_, \[Sigma]w_, numCellsX_,
   numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_] works identical to fastFullSpaceWfQRSpace except it
+  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_, ax_, ay_] works identical to
+  fastFullSpaceWfQRSpace except it
   returns only the absolute value. Because of that it is faster since no bloch wave has to be constructed. Gives wf
   not normalized properly if the support is not rectangular."
 
@@ -260,6 +274,26 @@ addNoise[wfKSpaceAbsSq_, SNR_, FBZnColnRow_] := Module[
         Dimensions[wfKSpaceAbsSq][[2]]}]]
 ]
 
+hamiltonianHaldane[kx_, ky_, J_,
+  J1_, \[Theta]_, \[CapitalDelta]_] := {
+  {
+    \[CapitalDelta] - 2 J1 (Cos[\[Theta] + 2 kx] + Cos[\[Theta] - kx - ky] +
+        Cos[\[Theta] - kx + ky]),
+    -J (2 Cos[kx] + Exp[-I ky])
+  }, {
+    -J (2 Cos[kx] + Exp[I ky]),
+    -\[CapitalDelta] - 2 J1 (Cos[\[Theta] - 2 kx] + Cos[\[Theta] + kx + ky] +
+        Cos[\[Theta] + kx - ky])
+  }
+}
+
+stateVectorHaldaneABAB[stateVectorHaldaneAB_] :=
+    Normalize@Flatten[{stateVectorHaldaneAB, stateVectorHaldaneAB}]
+
+stateVectorHaldaneAB[stateVectorHaldaneABAB_] :=
+    Normalize[{Mean[stateVectorHaldaneABAB[[{1, 3}]]],
+      Mean[stateVectorHaldaneABAB[[{2, 4}]]]}]
+
 (* ---- Wave functions of specific models ---- *)
 
 blochWave[fullSpaceXYTable_, k0_] :=
@@ -340,7 +374,7 @@ waveFunctionQ[elementaryCellXYTable_, k0x_, k0y_, \[Sigma]w_,
 
 fastFullSpaceWfQRSpace[k0x_, k0y_, stateVectorQ_, \[Sigma]w_, numCellsX_,
   numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_] :=
+  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_, ax_, ay_] :=
     Module[{
       wfQRSpaceElCell,
       wfQRSpaceFullSpace,
@@ -354,7 +388,7 @@ fastFullSpaceWfQRSpace[k0x_, k0y_, stateVectorQ_, \[Sigma]w_, numCellsX_,
           support*CenterArray[
             1/(norm*Sqrt[(2 numCellsX + 1) (2 numCellsY + 1)]) (*blochWave[
               fullSpaceXYTable, {k0x, k0y}]*)connectBlochPhase2DElementaryCells[k0x, k0y, numCellsX,
-              numCellsY, elementaryCellXYTable, Length@stateVectorQ*1, 1]*
+              numCellsY, elementaryCellXYTable, ax, ay]*
                 connect2DElementaryCells[numCellsX, numCellsY,
                   wfQRSpaceElCell], {dimx, dimy}]
       ]
@@ -362,7 +396,7 @@ fastFullSpaceWfQRSpace[k0x_, k0y_, stateVectorQ_, \[Sigma]w_, numCellsX_,
 
 fastFullSpaceWfQRSpaceAbs[stateVectorQ_, \[Sigma]w_, numCellsX_,
   numCellsY_, nodesExactPositions_, elementaryCellXYTable_,
-  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_] :=
+  fullSpaceXYTable_, \[Delta]x_, \[Delta]y_, dimx_, dimy_, support_, ax_, ay_] :=
     Module[{
       wfQRSpaceElCell,
       norm
@@ -377,6 +411,7 @@ fastFullSpaceWfQRSpaceAbs[stateVectorQ_, \[Sigma]w_, numCellsX_,
                 wfQRSpaceElCell], {dimx, dimy}]
       ]
     ]
+
 
 End[] (* `Private` *)
 
