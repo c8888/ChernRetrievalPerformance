@@ -40,8 +40,8 @@ folder = "default";
 SNR = 10000000000000000;
 SigmaSigmaPeak = 0;
 chi1 = 0; (* n+1 band's relative occupation in Landau Zener transition *)
-\[Theta] = 1;
-\[CapitalDelta] = 0.1;
+theta = 1;
+deltaOffset = 0.1;
 (**************************************************************)
 
 ToExpression[$CommandLine[[4;;-1]]]; (*Execute parameter overriding from command line. HAS TO BE RUN WITH
@@ -95,8 +95,8 @@ protocolAdd["trapezeRatio = "<> ToString[trapezeRatio] ];
 protocolAdd["SNR = "<> ToString[SNR] ];
 protocolAdd["SigmaSigmaPeak = "<> ToString[SigmaSigmaPeak] ];
 protocolAdd["chi1 = "<> ToString[chi1] ];
-protocolAdd["\[Theta] = "<> ToString[\[Theta]] ];
-protocolAdd["\[CapitalDelta] = "<> ToString[\[CapitalDelta]]];
+protocolAdd["theta = "<> ToString[theta] ];
+protocolAdd["deltaOffset = "<> ToString[deltaOffset]];
 (**************************************************************)
 (* INITIALISATION *)
 
@@ -158,7 +158,7 @@ FBZnColnRow = {Round[{dimx/2 - dimBZx/2, dimx/2 + dimBZx/2 + 1}],
 (* RESOLUTION *)
 (* example wf to compute sigmaPeak *)
 wf = fastFullSpaceWfQRSpace[0, 0,
-      stateVectorHaldaneABAB[myES[hamiltonianHaldane[0, 0, J, J1, \[Theta], \[CapitalDelta]]][[2,
+      stateVectorHaldaneABAB[myES[hamiltonianHaldane[0, 0, J, J1, theta, deltaOffset]][[2,
           n]]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
       elementaryCellXYTable,
       fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support, ax, ay];
@@ -198,18 +198,18 @@ ckRetrSupportTable =
             If[chi1!=0,
               (*mixing*)
               mixBands[chi1, fastFullSpaceWfQRSpace[#[[1]], #[[2]],
-              stateVectorHaldaneABAB[myES[hamiltonianHaldane[#[[1]], #[[2]], J, J1, \[Theta], \[CapitalDelta]]][[2,
+              stateVectorHaldaneABAB[myES[hamiltonianHaldane[#[[1]], #[[2]], J, J1, theta, deltaOffset]][[2,
                   n+1]]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
               elementaryCellXYTable,
               fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support, ax, ay],
               fastFullSpaceWfQRSpace[#[[1]], #[[2]],
-                stateVectorHaldaneABAB[myES[hamiltonianHaldane[#[[1]], #[[2]], J, J1, \[Theta], \[CapitalDelta]]][[2,
+                stateVectorHaldaneABAB[myES[hamiltonianHaldane[#[[1]], #[[2]], J, J1, theta, deltaOffset]][[2,
                   n]]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
               elementaryCellXYTable,
               fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support, ax, ay]],
               (*not mixing*)
             fastFullSpaceWfQRSpace[#[[1]], #[[2]],
-              stateVectorHaldaneABAB[myES[hamiltonianHaldane[#[[1]], #[[2]], J, J1, \[Theta], \[CapitalDelta]]][[2,
+              stateVectorHaldaneABAB[myES[hamiltonianHaldane[#[[1]], #[[2]], J, J1, theta, deltaOffset]][[2,
                   n]]], \[Sigma]w, numCellsX, numCellsY, nodesExactPositions,
               elementaryCellXYTable,
               fullSpaceXYTable, \[Delta]x, \[Delta]y, dimx, dimy, support, ax, ay]]),
