@@ -229,7 +229,7 @@ blochNodePhaseConjugateTableBZ =
       BZ, {2}];
 
 kBasisRetrSupportTable = Table[
-  Table[{stateVactorHaldaneAB[kProject[ckRetrSupportTable[[i, j, r, 1]], blochNodePhaseConjugateTableBZ[[i, j]], 2 q,
+  Table[{stateVectorHaldaneAB[kProject[ckRetrSupportTable[[i, j, r, 1]], blochNodePhaseConjugateTableBZ[[i, j]], 2 q,
     ckSupportMemberTable]], ckRetrSupportTable[[i, j, r, 2]], ckRetrSupportTable[[i, j, r, 3]]}, {r, 1, Dimensions[ckRetrSupportTable][[3]]}],
   {i, Dimensions[BZ][[1]]}, {j, Dimensions[BZ][[2]]}];
 
