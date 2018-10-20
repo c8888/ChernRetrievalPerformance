@@ -107,7 +107,7 @@ protocolAdd["deltaOffset = "<> ToString[deltaOffset]];
 {\[Delta]kx, \[Delta]ky} = {2 Pi/ax/gx/(2 numCellsX + 1), 2 Pi/ay/gy/(2 numCellsY + 1)}; (* in 1/[a] dimensions *)
 {\[Delta]x, \[Delta]y} = {2 Pi/(dimx*\[Delta]kx), 2 Pi/(dimy * \[Delta]ky)};
 
-BZ = latticeProbingPointsBZ[npts, a, q];
+BZ = Map[1/Sqrt[2] RotationMatrix[Pi/4].(# - Pi/a) &, latticeProbingPointsBZ[npts, a, 1], {2}];
 
 nodesExactPositions = {{-a/2, -a/2}(*A*), {a/2, -a/2}(*B*), {a/2, a/2}(*A*), {-a/2, a/2}(*B*)};
 
